@@ -1,0 +1,2606 @@
+---
+title: "CRISPR_KO_analysis_230724"
+author: "Matt Coelho"
+date: "23/07/2024"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# load packages
+library(ggfortify)
+library(tidyverse)
+library(reshape2)
+library(ggrepel)
+library(stringr)
+library(ggpointdensity)
+```
+
+```{r}
+# read in results from MAGeCK analysis
+#HT29 
+# gene level
+# ctrl exp 1
+# WT
+HT29_wt_ctrl_vs_plasmid_exp1 <- as_tibble(read.delim("HT29_exp1_2_JAK1_2937_3032/MAGECK_exp1/WT_CTRL_D14_exp1_vs_plasmid.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK1
+#JAK2
+HT29_wt_ctrl_vs_JAK2A11_ctrl_exp1 <- as_tibble(read.delim("HT29_exp1_2_JAK2_3067/MAGECK_exp1/WT_CTRL_Scr1_vs_A11_CTRL_Scr1.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+HT29_wt_ctrl_vs_JAK2F4_ctrl_exp1 <- as_tibble(read.delim("HT29_exp1_2_JAK2_3067/MAGECK_exp1/WT_CTRL_Scr1_vs_F4_CTRL_Scr1.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+
+#HT29 
+# gene level
+# ctrl exp 2
+#WT
+HT29_wt_ctrl_vs_plasmid_exp2 <- as_tibble(read.delim("HT29_exp1_2_JAK1_2937_3032/MAGECK_exp2/WT_CTRL_D14_exp2_vs_plasmid.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK1
+HT29_wt_ctrl_vs_JAK1c1_ctrl_exp2 <- as_tibble(read.delim("HT29_exp1_2_JAK1_2937_3032/MAGECK_exp2/WT_CTRL_D14_exp2_vs_JAK1_KO_C1_CTRL_D14_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+HT29_wt_ctrl_vs_JAK1c3_ctrl_exp2 <- as_tibble(read.delim("HT29_exp1_2_JAK1_2937_3032/MAGECK_exp2/WT_CTRL_D14_exp2_vs_JAK1_KO_C3_CTRL_D14_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK2
+HT29_wt_ctrl_vs_JAK2A11_ctrl_exp2 <- as_tibble(read.delim("HT29_exp1_2_JAK2_3067/MAGECK_exp2/WT_CTRL_Scr2_vs_A11_CTRL_Scr2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+HT29_wt_ctrl_vs_JAK2F4_ctrl_exp2 <- as_tibble(read.delim("HT29_exp1_2_JAK2_3067/MAGECK_exp2/WT_CTRL_Scr2_vs_F4_CTRL_Scr2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+
+#HT29 
+# gene level
+# ctrl average
+# WT
+HT29_wt_ctrl_vs_plasmid_average <- as_tibble(read.delim("HT29_exp1_2_JAK1_2937_3032/MAGECK_AVERAGE/WT_CTRL_D14_exp1_vs_plasmid.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t")) # note that Emre named this wrong
+
+#JAK1
+HT29_wt_ctrl_vs_JAK1c1_ctrl_average <- as_tibble(read.delim("HT29_exp1_2_JAK1_2937_3032/MAGECK_AVERAGE/WT_CTRL_D14_vs_JAK1_KO_C1_CTRL_D14.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+HT29_wt_ctrl_vs_JAK1c3_ctrl_average <- as_tibble(read.delim("HT29_exp1_2_JAK1_2937_3032/MAGECK_AVERAGE/WT_CTRL_D14_vs_JAK1_KO_C3_CTRL_D14.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+HT29_JAK1c3_ctrl_vs_JAK1c1_ctrl_average <- as_tibble(read.delim("HT29_exp1_2_JAK1_2937_3032/MAGECK_AVERAGE/JAK1_KO_C3_CTRL_D14_vs_JAK1_KO_C1_CTRL_D14.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK2
+HT29_wt_ctrl_vs_JAK2A11_ctrl_average <- as_tibble(read.delim("HT29_exp1_2_JAK2_3067/MAGECK_AVERAGE/WT_CTRL_vs_A11_CTRL.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+HT29_wt_ctrl_vs_JAK2F4_ctrl_average <- as_tibble(read.delim("HT29_exp1_2_JAK2_3067/MAGECK_AVERAGE/WT_CTRL_vs_F4_CTRL.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+HT29_JAK2F4_ctrl_vs_JAK2A11_ctrl_average <- as_tibble(read.delim("HT29_exp1_2_JAK2_3067/MAGECK_AVERAGE/F4_CTRL_vs_A11_CTRL.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+```
+
+```{r}
+# read in results from MAGeCK analysis
+
+#HT29 
+# gene level
+# IFNg exp 1
+# WT
+HT29_wt_IFNg_vs_ctrl_exp1 <- as_tibble(read.delim("HT29_exp1_2_JAK1_2937_3032/MAGECK_exp1/WT_IFNg_D14_exp1_vs_WT_CTRL_D14_exp1.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK1
+#JAK2
+HT29_wt_IFNg_vs_JAK2A11_IFNg_exp1 <- as_tibble(read.delim("HT29_exp1_2_JAK2_3067/MAGECK_exp1/WT_IFNg_Scr1_vs_A11_IFNg_Scr1.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+HT29_wt_IFNg_vs_JAK2F4_IFNg_exp1 <- as_tibble(read.delim("HT29_exp1_2_JAK2_3067/MAGECK_exp1/WT_IFNg_Scr1_vs_F4_IFNg_Scr1.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+
+#HT29 
+# gene level
+# IFNg exp 2
+#WT
+HT29_wt_IFNg_vs_ctrl_exp2 <- as_tibble(read.delim("HT29_exp1_2_JAK1_2937_3032/MAGECK_exp2/WT_IFNg_D14_exp2_vs_WT_CTRL_D14_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK1
+HT29_wt_IFNg_vs_JAK1c1_IFNg_exp2 <- as_tibble(read.delim("HT29_exp1_2_JAK1_2937_3032/MAGECK_exp2/WT_IFNg_D14_exp2_vs_JAK1_KO_C1_IFNg_D14_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+HT29_wt_IFNg_vs_JAK1c3_IFNg_exp2 <- as_tibble(read.delim("HT29_exp1_2_JAK1_2937_3032/MAGECK_exp2/WT_IFNg_D14_exp2_vs_JAK1_KO_C3_IFNg_D14_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK2
+HT29_wt_IFNg_vs_JAK2A11_IFNg_exp2 <- as_tibble(read.delim("HT29_exp1_2_JAK2_3067/MAGECK_exp2/WT_IFNg_Scr2_vs_A11_IFNg_Scr2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+HT29_wt_IFNg_vs_JAK2F4_IFNg_exp2 <- as_tibble(read.delim("HT29_exp1_2_JAK2_3067/MAGECK_exp2/WT_IFNg_Scr2_vs_F4_IFNg_Scr2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+
+#HT29 
+# gene level
+# IFNg average
+# WT
+HT29_wt_IFNg_vs_ctrl_average <- as_tibble(read.delim("HT29_exp1_2_JAK1_2937_3032/MAGECK_AVERAGE/WT_IFNg_D14_vs_WT_CTRL_D14.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK1
+HT29_wt_IFNg_vs_JAK1c1_IFNg_average <- as_tibble(read.delim("HT29_exp1_2_JAK1_2937_3032/MAGECK_AVERAGE/WT_IFNg_D14_vs_JAK1_KO_C1_IFNg_D14.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+HT29_wt_IFNg_vs_JAK1c3_IFNg_average <- as_tibble(read.delim("HT29_exp1_2_JAK1_2937_3032/MAGECK_AVERAGE/WT_IFNg_D14_vs_JAK1_KO_C3_IFNg_D14.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+HT29_JAK1c3_IFNg_vs_JAK1c1_IFNg_average <- as_tibble(read.delim("HT29_exp1_2_JAK1_2937_3032/MAGECK_AVERAGE/JAK1_KO_C3_IFNg_D14_vs_JAK1_KO_C1_IFNg_D14.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK2
+HT29_wt_IFNg_vs_JAK2A11_IFNg_average <- as_tibble(read.delim("HT29_exp1_2_JAK2_3067/MAGECK_AVERAGE/WT_IFNg_vs_A11_IFNg.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+HT29_wt_IFNg_vs_JAK2F4_IFNg_average <- as_tibble(read.delim("HT29_exp1_2_JAK2_3067/MAGECK_AVERAGE/WT_IFNg_vs_F4_IFNg.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+HT29_JAK2F4_IFNg_vs_JAK2A11_IFNg_average <- as_tibble(read.delim("HT29_exp1_2_JAK2_3067/MAGECK_AVERAGE/F4_IFNg_vs_A11_IFNg.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+```
+
+```{r}
+# read in results from MAGeCK analysis
+
+#HT29 
+# gene level
+# IL6 exp 1
+# WT
+HT29_wt_IL6_vs_ctrl_exp1 <- as_tibble(read.delim("HT29_exp1_2_JAK1_2937_3032/MAGECK_exp1/WT_IL.6_D14_exp1_vs_WT_CTRL_D14_exp1.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK1
+#JAK2
+HT29_wt_IL6_vs_JAK2A11_IL6_exp1 <- as_tibble(read.delim("HT29_exp1_2_JAK2_3067/MAGECK_exp1/WT_IL.6_Scr1_vs_A11_IL.6_Scr1.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+HT29_wt_IL6_vs_JAK2F4_IL6_exp1 <- as_tibble(read.delim("HT29_exp1_2_JAK2_3067/MAGECK_exp1/WT_IL.6_Scr1_vs_F4_IL.6_Scr1.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+
+#HT29 
+# gene level
+# IL6 exp 2
+# WT
+HT29_wt_IL6_vs_ctrl_exp2 <- as_tibble(read.delim("HT29_exp1_2_JAK1_2937_3032/MAGECK_exp2/WT_IL.6_D14_exp2_vs_WT_CTRL_D14_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK1
+HT29_wt_IL6_vs_JAK1c1_IL6_exp2 <- as_tibble(read.delim("HT29_exp1_2_JAK1_2937_3032/MAGECK_exp2/WT_IL.6_D14_exp2_vs_JAK1_KO_C1_IL.6_D14_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+HT29_wt_IL6_vs_JAK1c3_IL6_exp2 <- as_tibble(read.delim("HT29_exp1_2_JAK1_2937_3032/MAGECK_exp2/WT_IL.6_D14_exp2_vs_JAK1_KO_C3_IL.6_D14_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK2
+HT29_wt_IL6_vs_JAK2A11_IL6_exp2 <- as_tibble(read.delim("HT29_exp1_2_JAK2_3067/MAGECK_exp2/WT_IL.6_Scr2_vs_A11_IL.6_Scr2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+HT29_wt_IL6_vs_JAK2F4_IL6_exp2 <- as_tibble(read.delim("HT29_exp1_2_JAK2_3067/MAGECK_exp2/WT_IL.6_Scr2_vs_F4_IL.6_Scr2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+
+#HT29 
+# gene level
+# IL6 average
+# WT
+HT29_wt_IL6_vs_ctrl_average <- as_tibble(read.delim("HT29_exp1_2_JAK1_2937_3032/MAGECK_AVERAGE/WT_IL.6_D14_vs_WT_CTRL_D14.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK1
+HT29_wt_IL6_vs_JAK1c1_IL6_average <- as_tibble(read.delim("HT29_exp1_2_JAK1_2937_3032/MAGECK_AVERAGE/WT_IL.6_D14_vs_JAK1_KO_C1_IL.6_D14.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+HT29_wt_IL6_vs_JAK1c3_IL6_average <- as_tibble(read.delim("HT29_exp1_2_JAK1_2937_3032/MAGECK_AVERAGE/WT_IL.6_D14_vs_JAK1_KO_C3_IL.6_D14.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+HT29_JAK1c3_IL6_vs_JAK1c1_IL6_average <- as_tibble(read.delim("HT29_exp1_2_JAK1_2937_3032/MAGECK_AVERAGE/JAK1_KO_C3_IL.6_D14_vs_JAK1_KO_C1_IL.6_D14.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK2
+HT29_wt_IL6_vs_JAK2A11_IL6_average <- as_tibble(read.delim("HT29_exp1_2_JAK2_3067/MAGECK_AVERAGE/WT_IL.6_vs_A11_IL.6.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+HT29_wt_IL6_vs_JAK2F4_IL6_average <- as_tibble(read.delim("HT29_exp1_2_JAK2_3067/MAGECK_AVERAGE/WT_IL.6_vs_F4_IL.6.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+HT29_JAK2F4_IL6_vs_JAK2A11_IL6_average <- as_tibble(read.delim("HT29_exp1_2_JAK2_3067/MAGECK_AVERAGE/F4_IL.6_vs_A11_IL.6.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+```
+
+```{r}
+# read in results from MAGeCK analysis
+
+#SKMEL2 
+# gene level
+# ctrl exp 1
+# WT
+SKMEL2_wt_ctrl_vs_plasmid_exp1 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp1/WT_CTRL_exp1_vs_plasmid.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+# JAK1
+# JAK2
+SKMEL2_wt_ctrl_vs_JAK2D5_ctrl_exp1 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp1/WT_CTRL_exp1_vs_JAK2_D5_CTRL_exp1.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+SKMEL2_wt_ctrl_vs_JAK2C4_ctrl_exp1 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp1/WT_CTRL_exp1_vs_JAK2_C4_CTRL_exp1.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+
+#SKMEL2 
+# gene level
+# ctrl exp 2
+# WT
+SKMEL2_wt_ctrl_vs_plasmid_exp2 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp2/WT_CTRL_exp2_vs_plasmid.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+# JAK1
+SKMEL2_wt_ctrl_vs_JAK1C8_ctrl_exp2 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp2/WT_CTRL_exp2_vs_JAK1_C8_CTRL_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+SKMEL2_wt_ctrl_vs_JAK1B8_ctrl_exp2 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp2/WT_CTRL_exp2_vs_JAK1_B8_CTRL_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+# JAK2
+SKMEL2_wt_ctrl_vs_JAK2D5_ctrl_exp2 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp2/WT_CTRL_exp2_vs_JAK2_D5_CTRL_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+SKMEL2_wt_ctrl_vs_JAK2C4_ctrl_exp2 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp2/WT_CTRL_exp2_vs_JAK2_C4_CTRL_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+
+#SKMEL2 
+# gene level
+# ctrl average
+# WT
+SKMEL2_wt_ctrl_vs_plasmid_average <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/WT_CTRL_vs_plasmid.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+# JAK1
+SKMEL2_wt_ctrl_vs_JAK1C8_ctrl_average <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/WT_CTRL_vs_JAK1_C8_CTRL.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+SKMEL2_wt_ctrl_vs_JAK1B8_ctrl_average <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/WT_CTRL_vs_JAK1_B8_CTRL.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+SKMEL2_JAK1B8_ctrl_vs_JAK1C8_ctrl_average <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/JAK1_B8_CTRL_vs_JAK1_C8_CTRL.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+# JAK2
+SKMEL2_wt_ctrl_vs_JAK2D5_ctrl_average <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/WT_CTRL_vs_JAK2_D5_CTRL.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+SKMEL2_wt_ctrl_vs_JAK2C4_ctrl_average <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/WT_CTRL_vs_JAK2_C4_CTRL.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+SKMEL2_JAK2C4_ctrl_vs_JAK2D5_ctrl_average <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/JAK2_C4_CTRL_vs_JAK2_D5_CTRL.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+
+SKMEL2_JAK2C4_ctrl_vs_plasmid_average <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/JAK2_C4_CTRL_vs_plasmid.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+```
+
+```{r}
+# read in results from MAGeCK analysis
+
+#SKMEL2 
+# gene level
+# IFNg exp 1
+# WT
+SKMEL2_wt_IFNg_vs_ctrl_exp1 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp1/WT_IFNg_exp1_vs_WT_CTRL_exp1.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK1
+#JAK2
+SKMEL2_wt_IFNg_vs_JAK2D5_IFNg_exp1 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp1/WT_IFNg_exp1_vs_JAK2_D5_IFNg_exp1.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+SKMEL2_wt_IFNg_vs_JAK2C4_IFNg_exp1 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp1/WT_IFNg_exp1_vs_JAK2_C4_IFNg_exp1.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+
+#SKMEL2 
+# gene level
+# IFNg exp 2
+#WT
+SKMEL2_wt_IFNg_vs_ctrl_exp2 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp2/WT_IFNg_exp2_vs_WT_CTRL_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK1
+SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_exp2 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp2/WT_IFNg_exp2_vs_JAK1_C8_IFNg_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_exp2 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp2/WT_IFNg_exp2_vs_JAK1_B8_IFNg_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK2
+SKMEL2_wt_IFNg_vs_JAK2D5_IFNg_exp2 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp2/WT_IFNg_exp2_vs_JAK2_D5_IFNg_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+SKMEL2_wt_IFNg_vs_JAK2C4_IFNg_exp2 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp2/WT_IFNg_exp2_vs_JAK2_C4_IFNg_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+
+#SKMEL2 
+# gene level
+# IFNg average
+# WT
+SKMEL2_wt_IFNg_vs_ctrl_average <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/WT_IFNg_vs_WT_CTRL.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK1
+SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/WT_IFNg_vs_JAK1_C8_IFNg.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/WT_IFNg_vs_JAK1_B8_IFNg.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+SKMEL2_JAK1B8_IFNg_vs_JAK1C8_IFNg_average <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/JAK1_B8_IFNg_vs_JAK1_C8_IFNg.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK2
+SKMEL2_wt_IFNg_vs_JAK2D5_IFNg_average <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/WT_IFNg_vs_JAK2_D5_IFNg.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+SKMEL2_wt_IFNg_vs_JAK2C4_IFNg_average <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/WT_IFNg_vs_JAK2_C4_IFNg.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+SKMEL2_JAK2C4_IFNg_vs_JAK2D5_IFNg_average <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/JAK2_C4_IFNg_vs_JAK2_D5_IFNg.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+```
+
+```{r}
+# read in results from MAGeCK analysis
+
+#SKMEL2 
+# gene level
+# IL6 exp 1
+# WT
+SKMEL2_wt_IL6_vs_ctrl_exp1 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp1/WT_IL6_exp1_vs_WT_CTRL_exp1.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK1
+#JAK2
+SKMEL2_wt_IL6_vs_JAK2D5_IL6_exp1 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp1/WT_IL6_exp1_vs_JAK2_D5_IL6_exp1.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+SKMEL2_wt_IL6_vs_JAK2C4_IL6_exp1 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp1/WT_IL6_exp1_vs_JAK2_C4_IL6_exp1.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+
+#SKMEL2 
+# gene level
+# IL6 exp 2
+#WT
+SKMEL2_wt_IL6_vs_ctrl_exp2 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp2/WT_IL6_exp2_vs_WT_CTRL_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK1
+SKMEL2_wt_IL6_vs_JAK1C8_IL6_exp2 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp2/WT_IL6_exp2_vs_JAK1_C8_IL6_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+SKMEL2_wt_IL6_vs_JAK1B8_IL6_exp2 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp2/WT_IL6_exp2_vs_JAK1_B8_IL6_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK2
+SKMEL2_wt_IL6_vs_JAK2D5_IL6_exp2 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp2/WT_IL6_exp2_vs_JAK2_D5_IL6_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+SKMEL2_wt_IL6_vs_JAK2C4_IL6_exp2 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp2/WT_IL6_exp2_vs_JAK2_C4_IL6_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+
+#SKMEL2 
+# gene level
+# IL6 average
+#WT
+SKMEL2_wt_IL6_vs_ctrl_average <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/WT_IL6_vs_WT_CTRL.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK1
+SKMEL2_wt_IL6_vs_JAK1C8_IL6_average <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/WT_IL6_vs_JAK1_C8_IL6.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+SKMEL2_wt_IL6_vs_JAK1B8_IL6_average <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/WT_IL6_vs_JAK1_B8_IL6.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+SKMEL2_JAK1B8_IL6_vs_JAK1C8_IL6_average <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/JAK1_B8_IL6_vs_JAK1_C8_IL6.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK2
+SKMEL2_wt_IL6_vs_JAK2D5_IL6_average <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/WT_IL6_vs_JAK2_D5_IL6.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+SKMEL2_wt_IL6_vs_JAK2C4_IL6_average <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/WT_IL6_vs_JAK2_C4_IL6.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+SKMEL2_JAK2C4_IL6_vs_JAK2D5_IL6_average <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/JAK2_C4_IL6_vs_JAK2_D5_IL6.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+```
+
+```{r}
+# read in results from MAGeCK analysis
+
+#SKMEL2 
+# gene level
+# IFNb exp 1
+# WT
+#JAK1
+SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_exp1 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp1/WT_IFNb_exp1_vs_JAK1_C8_IFNb_exp1.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_exp1 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp1/WT_IFNb_exp1_vs_JAK1_B8_IFNb_exp1.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK2
+SKMEL2_wt_IFNb_vs_JAK2D5_IFNb_exp1 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp1/WT_IFNb_exp1_vs_JAK2_D5_IFNb_exp1.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+SKMEL2_wt_IFNb_vs_JAK2C4_IFNb_exp1 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp1/WT_IFNb_exp1_vs_JAK2_C4_IFNb_exp1.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+
+#SKMEL2 
+# gene level
+# IFNb exp 2
+#WT
+#JAK1
+SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_exp2 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp2/WT_IFNb_exp2_vs_JAK1_C8_IFNb_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_exp2 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp2/WT_IFNb_exp2_vs_JAK1_B8_IFNb_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK2
+SKMEL2_wt_IFNb_vs_JAK2D5_IFNb_exp2 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp2/WT_IFNb_exp2_vs_JAK2_D5_IFNb_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+SKMEL2_wt_IFNb_vs_JAK2C4_IFNb_exp2 <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_exp2/WT_IFNb_exp2_vs_JAK2_C4_IFNb_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+
+#SKMEL2 
+# gene level
+# IFNb average
+#WT
+#JAK1
+SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/WT_IFNb_vs_JAK1_C8_IFNb.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/WT_IFNb_vs_JAK1_B8_IFNb.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+SKMEL2_JAK1B8_IFNb_vs_JAK1C8_IFNb_average <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/JAK1_B8_IFNb_vs_JAK1_C8_IFNb.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK2
+SKMEL2_wt_IFNb_vs_JAK2D5_IFNb_average <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/WT_IFNb_vs_JAK2_D5_IFNb.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+SKMEL2_wt_IFNb_vs_JAK2C4_IFNb_average <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/WT_IFNb_vs_JAK2_C4_IFNb.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+SKMEL2_JAK2C4_IFNb_vs_JAK2D5_IFNb_average <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/JAK2_C4_IFNb_vs_JAK2_D5_IFNb.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+```
+
+```{r}
+# read in results from MAGeCK analysis
+
+#A375 
+# gene level
+# ctrl exp 1
+#WT
+A375_wt_ctrl_vs_plasmid_exp1 <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_exp1/WT_CTRL_D14_exp1_vs_plasmid.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK1
+#JAK2
+
+#A375 
+# gene level
+# ctrl exp 2
+#WT
+A375_wt_ctrl_vs_plasmid_exp2 <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_exp2/WT_CTRL_D14_exp2_vs_plasmid.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK1
+A375_wt_ctrl_vs_JAK1B10_ctrl_exp2 <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_exp2/WT_CTRL_D14_exp2_vs_JAK1_B10_CTRL_D14_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+A375_wt_ctrl_vs_JAK1E8_ctrl_exp2 <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_exp2/WT_CTRL_D14_exp2_vs_JAK1_E8_CTRL_D14_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK2
+A375_wt_ctrl_vs_JAK2D9_ctrl_exp2 <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_exp2/WT_CTRL_D14_exp2_vs_JAK2_D9_CTRL_D14_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+A375_wt_ctrl_vs_JAK2D10_ctrl_exp2 <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_exp2/WT_CTRL_D14_exp2_vs_JAK2_D10_CTRL_D14_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+
+#A375 
+# gene level
+# ctrl average
+#WT
+A375_wt_ctrl_vs_plasmid_average <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_AVERAGE/WT_CTRL_D14_vs_plasmid.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK1
+A375_wt_ctrl_vs_JAK1B10_ctrl_average <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_AVERAGE/WT_CTRL_D14_vs_JAK1_B10_CTRL_D14.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+A375_wt_ctrl_vs_JAK1E8_ctrl_average <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_AVERAGE/WT_CTRL_D14_vs_JAK1_E8_CTRL_D14.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+A375_JAK1B10_ctrl_vs_JAK1E8_ctrl_average <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_AVERAGE/JAK1_B10_CTRL_D14_vs_JAK1_E8_CTRL_D14.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK2
+A375_wt_ctrl_vs_JAK2D9_ctrl_average <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_AVERAGE/WT_CTRL_D14_vs_JAK2_D9_CTRL_D14.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+A375_wt_ctrl_vs_JAK2D10_ctrl_average <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_AVERAGE/WT_CTRL_D14_vs_JAK2_D10_CTRL_D14.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+A375_JAK2D10_ctrl_vs_JAK2D9_ctrl_average <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_AVERAGE/JAK2_D10_CTRL_D14_vs_JAK2_D9_CTRL_D14.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+```
+
+```{r}
+# read in results from MAGeCK analysis
+
+#A375 
+# gene level
+# IFNg exp 1
+#WT
+A375_wt_IFNg_vs_ctrl_exp1 <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_exp1/WT_IFNg_D14_exp1_vs_WT_CTRL_D14_exp1.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+
+# JAK1
+# JAK2
+A375_wt_IFNg_vs_JAK2D9_IFNg_exp1 <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_exp1/WT_IFNg_D14_exp1_vs_JAK2_D9_IFNg_D14_exp1.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+A375_wt_IFNg_vs_JAK2D10_IFNg_exp1 <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_exp1/WT_IFNg_D14_exp1_vs_JAK2_D10_IFNg_D14_exp1.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+
+#A375 
+# gene level
+# IFNg exp 2
+# WT
+A375_wt_IFNg_vs_ctrl_exp2 <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_exp2/WT_IFNg_D14_exp2_vs_WT_CTRL_D14_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+
+#JAK1
+A375_wt_IFNg_vs_ctrl_exp2 <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_exp2/WT_IFNg_D14_exp2_vs_WT_CTRL_D14_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+A375_wt_IFNg_vs_JAK1B10_IFNg_exp2 <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_exp2/WT_IFNg_D14_exp2_vs_JAK1_B10_IFNg_D14_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+A375_wt_IFNg_vs_JAK1E8_IFNg_exp2 <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_exp2/WT_IFNg_D14_exp2_vs_JAK1_E8_IFNg_D14_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK2
+A375_wt_IFNg_vs_JAK2D9_IFNg_exp2 <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_exp2/WT_IFNg_D14_exp2_vs_JAK2_D9_IFNg_D14_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+A375_wt_IFNg_vs_JAK2D10_IFNg_exp2 <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_exp2/WT_IFNg_D14_exp2_vs_JAK2_D10_IFNg_D14_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+
+#A375 
+# gene level
+# IFNg average
+#JAK1
+A375_wt_IFNg_vs_ctrl_average <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_AVERAGE/WT_IFNg_D14_vs_WT_CTRL_D14.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+A375_wt_IFNg_vs_JAK1B10_IFNg_average <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_AVERAGE/WT_IFNg_D14_vs_JAK1_B10_IFNg_D14.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+A375_wt_IFNg_vs_JAK1E8_IFNg_average <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_AVERAGE/WT_IFNg_D14_vs_JAK1_E8_IFNg_D14.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+A375_JAK1B10_IFNg_vs_JAK1E8_IFNg_average <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_AVERAGE/JAK1_B10_IFNg_D14_vs_JAK1_E8_IFNg_D14.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK2
+A375_wt_IFNg_vs_JAK2D9_IFNg_average <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_AVERAGE/WT_IFNg_D14_vs_JAK2_D9_IFNg_D14.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+A375_wt_IFNg_vs_JAK2D10_IFNg_average <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_AVERAGE/WT_IFNg_D14_vs_JAK2_D10_IFNg_D14.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+A375_JAK2D10_IFNg_vs_JAK2D9_IFNg_average <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_AVERAGE/JAK2_D10_IFNg_D14_vs_JAK2_D9_IFNg_D14.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+```
+
+```{r}
+# read in results from MAGeCK analysis
+
+#A375 
+# gene level
+# IL6 exp 1
+#WT
+A375_wt_IL6_vs_ctrl_exp1 <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_exp1/WT_IL.6_D14_exp1_vs_WT_CTRL_D14_exp1.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+
+#JAK1
+#JAK2
+A375_wt_IL6_vs_JAK2D9_IL6_exp1 <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_exp1/WT_IL.6_D14_exp1_vs_JAK2_D9_IL.6_D14_exp1.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+A375_wt_IL6_vs_JAK2D10_IL6_exp1 <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_exp1/WT_IL.6_D14_exp1_vs_JAK2_D10_IL.6_D14_exp1.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+
+#A375 
+# gene level
+# IL6 exp 2
+#WT
+A375_wt_IL6_vs_ctrl_exp2 <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_exp2/WT_IL6_D14_exp2_vs_WT_CTRL_D14_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK1
+A375_wt_IL6_vs_JAK1B10_IL6_exp2 <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_exp2/WT_IL6_D14_exp2_vs_JAK1_B10_IL6_D14_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+A375_wt_IL6_vs_JAK1E8_IL6_exp2 <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_exp2/WT_IL6_D14_exp2_vs_JAK1_E8_IL6_D14_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK2
+A375_wt_IL6_vs_JAK2D9_IL6_exp2 <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_exp2/WT_IL6_D14_exp2_vs_JAK2_D9_IL6_D14_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+A375_wt_IL6_vs_JAK2D10_IL6_exp2 <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_exp2/WT_IL6_D14_exp2_vs_JAK2_D10_IL6_D14_exp2.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+
+#A375 
+# gene level
+# IL6 average
+#WT
+A375_wt_IL6_vs_ctrl_average <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_AVERAGE/WT_IL6_D14_vs_WT_CTRL_D14.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK1
+A375_wt_IL6_vs_JAK1B10_IL6_average <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_AVERAGE/WT_IL6_D14_vs_JAK1_B10_IL6_D14.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+A375_wt_IL6_vs_JAK1E8_IL6_average <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_AVERAGE/WT_IL6_D14_vs_JAK1_E8_IL6_D14.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+A375_JAK1B10_IL6_vs_JAK1E8_IL6_average <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_AVERAGE/JAK1_B10_IL6_D14_vs_JAK1_E8_IL6_D14.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK2
+A375_wt_IL6_vs_JAK2D9_IL6_average <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_AVERAGE/WT_IL6_D14_vs_JAK2_D9_IL6_D14.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+A375_wt_IL6_vs_JAK2D10_IL6_average <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_AVERAGE/WT_IL6_D14_vs_JAK2_D10_IL6_D14.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+A375_JAK2D10_IL6_vs_JAK2D9_IL6_average <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_AVERAGE/JAK2_D10_IL6_D14_vs_JAK2_D9_IL6_D14.gene_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+```
+
+```{r}
+# bind all average dataframes together
+# IFNg
+IFNg_average <-
+  bind_rows(
+  lst(
+    HT29_wt_IFNg_vs_ctrl_average, HT29_wt_IFNg_vs_JAK1c1_IFNg_average, HT29_wt_IFNg_vs_JAK1c3_IFNg_average, HT29_JAK1c3_IFNg_vs_JAK1c1_IFNg_average, HT29_wt_IFNg_vs_JAK2A11_IFNg_average, HT29_wt_IFNg_vs_JAK2F4_IFNg_average, HT29_JAK2F4_IFNg_vs_JAK2A11_IFNg_average,
+    SKMEL2_wt_IFNg_vs_ctrl_average, SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average, SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average, SKMEL2_JAK1B8_IFNg_vs_JAK1C8_IFNg_average, SKMEL2_wt_IFNg_vs_JAK2D5_IFNg_average, SKMEL2_wt_IFNg_vs_JAK2C4_IFNg_average, SKMEL2_JAK2C4_IFNg_vs_JAK2D5_IFNg_average,
+    A375_wt_IFNg_vs_ctrl_average, A375_wt_IFNg_vs_JAK1B10_IFNg_average, A375_wt_IFNg_vs_JAK1E8_IFNg_average, A375_JAK1B10_IFNg_vs_JAK1E8_IFNg_average, A375_wt_IFNg_vs_JAK2D9_IFNg_average, A375_wt_IFNg_vs_JAK2D10_IFNg_average, A375_JAK2D10_IFNg_vs_JAK2D9_IFNg_average
+    ), 
+  .id = "sample")
+```
+
+```{r}
+# change the variables in the merged mageck datatable to interpreatble values
+IFNg_average
+IFNg_average <- dplyr::rename(IFNg_average, gene = id)
+ IFNg_average <- mutate(IFNg_average, pvalue = ifelse(neg.lfc< 0, neg.p.value, pos.p.value))
+ IFNg_average <- mutate(IFNg_average, fdr = ifelse(neg.lfc< 0, neg.fdr, pos.fdr))
+ IFNg_average <- mutate(IFNg_average, neg_log_10_p = (-1*log10(pvalue)))
+ IFNg_average <- mutate(IFNg_average, legend = ifelse(neg.lfc>0 & pvalue <0.05 & fdr <0.1, "enriched in WT vs KO", ifelse(neg.lfc<0 & pvalue <0.05 & fdr <0.1, "depleted in WT vs KO", "not significant")))
+
+IFNg_average
+```
+
+```{r}
+# IFNg -volcano plot
+pos = position_jitter(width = 0.2, height = 0.2, seed = 2)
+
+plot1 <- ggplot(IFNg_average, aes(x=neg.lfc, y= neg_log_10_p, colour = legend)) +
+geom_point(size =3, position = pos) +
+geom_text_repel(aes(label=ifelse(pvalue < 0.05 & fdr <0.1 & neg.lfc > 3 | pvalue < 0.05 & fdr <0.1 & neg.lfc < -3, gene, "")), size=3, position=pos, max.overlaps = Inf) +
+theme_classic() +
+  facet_wrap(~sample, ncol =7) +
+scale_colour_manual(values=c("royalblue1","salmon", "grey45"), na.value="grey80") +
+labs(title= "IFN-g screens") + xlab("Log2 fold change") + ylab("-Log10 (P-value)")
+plot1
+```
+
+```{r}
+# IFNg -volcano plot
+
+pos = position_jitter(width = 0.2, height = 0.2, seed = 2)
+
+plot1 <- ggplot(IFNg_average, aes(x=neg.lfc, y= neg_log_10_p, colour = legend)) +
+geom_point(size =3, position = pos) +
+geom_text_repel(aes(label=ifelse(legend !="not significant" & gene %in% c("TYK2", "YARS2", "RARS2", "CARS1", "PARS2","TARS2", "HARS1", "IARS2", "FARSB", "MTOR", "CHMP5", "JAK1", "VPS37A", "STAT1", "TNIP1", "PTPN2", "SOCS1", "CHD1", "MAP3K7"), gene, "")), size=3, position=pos, max.overlaps = Inf) +
+theme_classic() +
+  facet_wrap(~sample, ncol =7) +
+scale_colour_manual(values=c("royalblue1","salmon", "grey45"), na.value="grey80") +
+labs(title= "IFN-g screens") + xlab("Log2 fold change") + ylab("-Log10 (P-value)")
+plot1
+```
+```{r}
+# IFNg -volcano plot
+
+plot1 <- ggplot(IFNg_average, aes(x=neg.rank, y= neg.lfc, size = fdr, alpha = neg_log_10_p)) +
+geom_point(shape = 1) +
+geom_text_repel(aes(label=ifelse(legend !="not significant" & gene %in% c("TYK2", "YARS2", "RARS2", "CARS1", "PARS2","TARS2", "HARS1", "IARS2", "FARSB", "MTOR", "CHMP5", "JAK1", "VPS37A", "STAT1", "TNIP1", "PTPN2", "SOCS1", "CHD1", "MAP3K7"), gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "red") +
+  theme_classic() +
+  facet_wrap(~sample, ncol =7) +
+    scale_alpha_continuous(range = c(0.2,1)) +
+    scale_size(transform = "reverse", range = c(0.1,3) ) +
+labs(title= "IFN-g screens") + xlab("gene rank") + ylab("L2FC")
+plot1
+```
+
+```{r}
+# IFNg -volcano plot
+pos = position_jitter(width = 0.2, height = 0.2, seed = 2)
+
+gene_hits<-c("TYK2", "YARS2", "RARS2", "CARS1", "PARS2","TARS2", "HARS1", "IARS2", "FARSB", "MTOR", "CHMP5", "JAK1", "VPS37A", "STAT1", "TNIP1", "PTPN2", "SOCS1", "CHD1", "MAP3K7")
+
+HT29_IFNg_average <- 
+  IFNg_average %>%
+  filter(str_detect(sample, "HT29")) %>%
+  group_by(sample) %>%
+  mutate(rank = rank(neg.lfc))
+
+HT29_IFNg_average %>% arrange(desc(rank))
+
+
+plot1 <- ggplot(HT29_IFNg_average, aes(x=rank, y= neg.lfc, size = fdr, alpha = neg_log_10_p)) +
+geom_point(position = pos, shape = 1) +
+geom_text_repel(aes(label=ifelse(legend !="not significant" & rank <5 | legend !="not significant" & rank > 18856, gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "red") +
+  theme_classic() +
+  facet_wrap(~sample, ncol =7) +
+    scale_alpha_continuous(range = c(0.2,1)) +
+    scale_size(transform = "reverse", range = c(0.1,3) ) +
+labs(title= "IFN-g screens") + xlab("gene rank") + ylab("L2FC")
+plot1
+```
+```{r}
+# IFNg -volcano plot
+
+pos = position_jitter(width = 0.2, height = 0.2, seed = 2)
+
+plot1 <- ggplot(HT29_IFNg_average, aes(x=neg.lfc, y= neg_log_10_p, colour = legend)) +
+geom_point(size =3, position = pos) +
+geom_text_repel(aes(label=ifelse(legend !="not significant" & gene %in% c("TYK2", "YARS2", "RARS2", "CARS1", "PARS2","TARS2", "HARS1", "IARS2", "FARSB", "MTOR", "CHMP5", "JAK1", "VPS37A", "STAT1", "TNIP1", "PTPN2", "SOCS1", "CHD1", "MAP3K7"), gene, "")), size=3, position=pos, max.overlaps = Inf) +
+theme_classic() +
+  facet_wrap(~sample, ncol =7) +
+scale_colour_manual(values=c("blue","red", "grey65"), na.value="grey80") +
+labs(title= "IFN-g screens") + xlab("Log2 fold change") + ylab("-Log10 (P-value)")
+plot1
+```
+
+```{r}
+# list the shared hits for IFNg
+
+HT29_sens_IFNg <- 
+  IFNg_average %>%
+  filter(legend == ("depleted in WT vs KO")) %>%
+  filter(str_detect(sample, "HT29") == TRUE) %>%
+  select(gene) %>%
+  distinct()
+HT29_sens_IFNg %>% write.csv("HT29_sens.csv")
+
+HT29_res_IFNg <- 
+  IFNg_average %>%
+  filter(legend == ("enriched in WT vs KO")) %>%
+  filter(str_detect(sample, "HT29") == TRUE) %>%
+  select(gene) %>%
+  distinct()
+HT29_res_IFNg %>% write.csv("HT29_res.csv")
+
+A375_sens_IFNg <-
+  IFNg_average %>%
+  filter(legend == ("depleted in WT vs KO")) %>%
+  filter(str_detect(sample, "A375") == TRUE) %>%
+  select(gene) %>%
+  distinct()
+A375_sens_IFNg
+
+A375_res_IFNg <- 
+  IFNg_average %>%
+  filter(legend == ("enriched in WT vs KO")) %>%
+  filter(str_detect(sample, "A375") == TRUE) %>%
+  select(gene) %>%
+  distinct()
+A375_res_IFNg
+
+SKMEL2_sens_IFNg <- 
+  IFNg_average %>%
+  filter(legend == ("depleted in WT vs KO")) %>%
+  filter(str_detect(sample, "SKMEL") == TRUE) %>%
+  select(gene) %>%
+  distinct()
+SKMEL2_sens_IFNg
+
+SKMEL2_res_IFNg <- 
+  IFNg_average %>%
+  filter(legend == ("enriched in WT vs KO")) %>%
+  filter(str_detect(sample, "SKMEL") == TRUE) %>%
+  select(gene) %>%
+  distinct()
+SKMEL2_res_IFNg
+
+#look for shared hits
+inner_join(HT29_sens_IFNg, A375_sens_IFNg) %>% write.csv("HT29_A375_shared_sens.csv")
+inner_join(HT29_sens_IFNg, SKMEL2_sens_IFNg)
+inner_join(A375_sens_IFNg, SKMEL2_sens_IFNg)
+inner_join(HT29_sens_IFNg, A375_sens_IFNg)
+inner_join(HT29_res_IFNg, A375_res_IFNg) %>% write.csv("HT29_A375_shared_res.csv")
+inner_join(HT29_res_IFNg, SKMEL2_res_IFNg) %>% write.csv("HT29_SKMEL_shared_res.csv")
+inner_join(A375_res_IFNg, SKMEL2_res_IFNg) %>% write.csv("A375_SKMEL_shared_res.csv")
+```
+
+```{r}
+#investigate HT-29 shared hits private to HT-29
+
+#sensitivity
+HT_29_sens1 <-
+  IFNg_average %>%
+  filter(legend == ("depleted in WT vs KO")) %>%
+  filter(sample == "HT29_wt_IFNg_vs_ctrl_average") %>%
+  select(gene) %>%
+  distinct()
+
+HT_29_sens2 <-
+  IFNg_average %>%
+  filter(legend == ("depleted in WT vs KO")) %>%
+    filter(sample == "HT29_wt_IFNg_vs_JAK1c1_IFNg_average") %>%
+  select(gene) %>%
+  distinct()
+
+HT_29_sens3 <-
+  IFNg_average %>%
+  filter(legend == ("depleted in WT vs KO")) %>%
+    filter(sample == "HT29_wt_IFNg_vs_JAK1c3_IFNg_average") %>%
+  select(gene) %>%
+  distinct()
+
+HT_29_sens4 <-
+IFNg_average %>%
+  filter(legend == ("depleted in WT vs KO")) %>%
+    filter(sample == "HT29_wt_IFNg_vs_JAK2A11_IFNg_average") %>%
+  select(gene) %>%
+  distinct()
+
+HT_29_sens5 <-
+IFNg_average %>%
+  filter(legend == ("depleted in WT vs KO")) %>%
+    filter(sample == "HT29_wt_IFNg_vs_JAK2F4_IFNg_average") %>%
+  select(gene) %>%
+  distinct()
+
+#resistance
+HT_29_res1 <-
+IFNg_average %>%
+  filter(legend == ("enriched in WT vs KO")) %>%
+  filter(sample == "HT29_wt_IFNg_vs_ctrl_average") %>%
+  select(gene) %>%
+  distinct()
+
+HT_29_res2 <-
+IFNg_average %>%
+  filter(legend == ("enriched in WT vs KO")) %>%
+    filter(sample == "HT29_wt_IFNg_vs_JAK1c1_IFNg_average") %>%
+  select(gene) %>%
+  distinct()
+
+HT_29_res3 <-
+IFNg_average %>%
+  filter(legend == ("enriched in WT vs KO")) %>%
+    filter(sample == "HT29_wt_IFNg_vs_JAK1c3_IFNg_average") %>%
+  select(gene) %>%
+  distinct()
+
+HT_29_res4 <-
+IFNg_average %>%
+  filter(legend == ("enriched in WT vs KO")) %>%
+    filter(sample == "HT29_wt_IFNg_vs_JAK2A11_IFNg_average") %>%
+  select(gene) %>%
+  distinct()
+
+HT_29_res5 <-
+IFNg_average %>%
+  filter(legend == ("enriched in WT vs KO")) %>%
+    filter(sample == "HT29_wt_IFNg_vs_JAK2F4_IFNg_average") %>%
+  select(gene) %>%
+  distinct()
+
+inner_join(HT_29_sens1, HT_29_sens2)
+inner_join(HT_29_sens1, HT_29_sens3)
+inner_join(HT_29_sens1, HT_29_sens4)
+inner_join(HT_29_sens1, HT_29_sens5)
+inner_join(HT_29_sens2, HT_29_sens3)
+inner_join(HT_29_sens2, HT_29_sens4)
+inner_join(HT_29_sens2, HT_29_sens5)
+inner_join(HT_29_sens3, HT_29_sens4)
+inner_join(HT_29_sens3, HT_29_sens5)
+inner_join(HT_29_sens4, HT_29_sens5)
+
+inner_join(HT_29_res1, HT_29_res2)
+inner_join(HT_29_res1, HT_29_res3)
+inner_join(HT_29_res1, HT_29_res4)
+inner_join(HT_29_res1, HT_29_res5)
+inner_join(HT_29_res2, HT_29_res3)
+inner_join(HT_29_res2, HT_29_res4)
+inner_join(HT_29_res2, HT_29_res5)
+inner_join(HT_29_res3, HT_29_res4)
+inner_join(HT_29_res3, HT_29_res5)
+inner_join(HT_29_res4, HT_29_res5)
+
+```
+```{r}
+#GO terms
+HT_29_res1
+HT_29_sens1
+```
+```{r}
+# read in gProfiler GO terms from n = 237 shared hits
+gprofiler_shared <- as_tibble(read.csv("gProfiler_hsapiens_06-11-2024_10-38-21__intersections.csv", stringsAsFactors = FALSE, header = TRUE))
+
+gprofiler_shared <- 
+  gprofiler_shared %>%
+  group_by(source) %>%
+  arrange(negative_log10_of_adjusted_p_value)
+
+gprofiler_shared
+#plot graph of gprofiler top terms
+
+plot1 <- ggplot(gprofiler_shared, aes(x = negative_log10_of_adjusted_p_value, y = reorder(term_name, negative_log10_of_adjusted_p_value), fill = source)) +
+  geom_col() +
+  theme_classic() +
+  scale_fill_manual(values = c("salmon", "royalblue", "black", "orange", "salmon")) +
+  labs(color = "") +
+  labs(title = "") +
+  xlab("-Log10(P adj.)") +
+  ylab("")
+plot1
+
+```
+
+```{r}
+# label common hits in HT-29 screens
+HT29_IFNg_data <- 
+  IFNg_average %>%
+  filter(sample %in% c("HT29_wt_IFNg_vs_ctrl_average", "HT29_wt_IFNg_vs_JAK1c1_IFNg_average", "HT29_wt_IFNg_vs_JAK1c3_IFNg_average", "HT29_wt_IFNg_vs_JAK2A11_IFNg_average", "HT29_wt_IFNg_vs_JAK2F4_IFNg_average"))
+
+hits <- c("MAP3K7", "CHD1", "TBK1", "PTPN2", "ADAR", "ELOB", "SOCS1", "CHMP5", "RAB5C", "VPS37A", "ITPK1", "UBE2N", "MED16",
+          "RARS1","RARS2", "PRMT5", "YARS2", "IRF3", "CTU2", "RARS2", "IARS1", "YARS1", "KARS1", "UBA5", "JAK2", "STAT1", "IRF1", "IARS1","IARS2",  "IFNGR1", "MTOR", "CTU1", "RPTOR", "CASP8", "JAK1", "IFNGR2", "APC", "ELP1", "ELP2", "ELP3", "ELP4", "ELP5", "HARS1", "FARSB")
+  
+plot1 <- ggplot(subset(HT29_IFNg_data, sample == "HT29_wt_IFNg_vs_ctrl_average"), aes(x=neg.lfc, y= neg_log_10_p, colour = legend, size = fdr)) +
+geom_point(shape =1) +
+geom_text_repel(aes(label=ifelse(neg.lfc > 3.5 & neg_log_10_p > 5.5 |  neg.lfc < -2.5 & neg_log_10_p > 4 | legend != "not significant" & gene %in% hits & neg_log_10_p > 4, gene, "")), size=3, colour =  "black", max.overlaps = Inf) +
+theme_classic() +
+scale_colour_manual(values=c("red", "blue", "grey70"), na.value="grey80") +
+    scale_size(transform = "reverse", range = c(0.1,3.5) ) +
+       labs(color = "", size = "FDR") +labs(title= "") + xlab("Log2 fold change") + ylab("-Log10 (P-value)")
+plot1
+
+plot2 <- ggplot(subset(HT29_IFNg_data, sample == "HT29_wt_IFNg_vs_JAK1c1_IFNg_average"), aes(x=neg.lfc, y= neg_log_10_p, colour = legend, size = fdr)) +
+geom_point(shape =1) +
+geom_text_repel(aes(label=ifelse(neg.lfc > 3.5 & neg_log_10_p > 5.5 |  legend == "depleted in WT vs KO" & neg.lfc < -2 | gene == "CHD1"| legend != "not significant" & gene %in% hits & neg_log_10_p > 4, gene, "")), size=3, colour =  "black", max.overlaps = Inf) +
+theme_classic() +
+scale_colour_manual(values=c("red", "blue", "grey70"), na.value="grey80") +
+    scale_size(transform = "reverse", range = c(0.1,3.5) ) +
+       labs(color = "", size = "FDR") +labs(title= "") + xlab("Log2 fold change") + ylab("-Log10 (P-value)")
+plot2
+
+plot3 <- ggplot(subset(HT29_IFNg_data, sample == "HT29_wt_IFNg_vs_JAK1c3_IFNg_average"), aes(x=neg.lfc, y= neg_log_10_p, colour = legend, size = fdr)) +
+geom_point(shape =1) +
+geom_text_repel(aes(label=ifelse(neg.lfc > 3.5 & neg_log_10_p > 5.5 |  legend == "depleted in WT vs KO" & neg.lfc < -2 | legend != "not significant" & gene %in% hits & neg_log_10_p > 4, gene, "")), size=3, colour =  "black", max.overlaps = Inf) +
+theme_classic() +
+scale_colour_manual(values=c("red", "blue", "grey70"), na.value="grey80") +
+    scale_size(transform = "reverse", range = c(0.1,3.5) ) +
+       labs(color = "", size = "FDR") +labs(title= "") + xlab("Log2 fold change") + ylab("-Log10 (P-value)")
+plot3
+
+plot4 <- ggplot(subset(HT29_IFNg_data, sample == "HT29_wt_IFNg_vs_JAK2A11_IFNg_average"), aes(x=neg.lfc, y= neg_log_10_p, colour = legend, size = fdr)) +
+geom_point(shape =1) +
+geom_text_repel(aes(label=ifelse(neg.lfc > 2.5 & neg_log_10_p > 5.5 |  neg.lfc < -2.5 & neg_log_10_p > 4.5 | gene == "CHD1" | gene == "MAP3K7" | legend != "not significant" & gene %in% hits & neg_log_10_p > 4, gene, "")), size=3, colour =  "black", max.overlaps = Inf) +
+theme_classic() +
+scale_colour_manual(values=c("red", "blue", "grey70"), na.value="grey80") +
+    scale_size(transform = "reverse", range = c(0.1,3.5) ) +
+       labs(color = "", size = "FDR") +labs(title= "") + xlab("Log2 fold change") + ylab("-Log10 (P-value)")
+plot4
+
+plot5 <- ggplot(subset(HT29_IFNg_data, sample == "HT29_wt_IFNg_vs_JAK2F4_IFNg_average"), aes(x=neg.lfc, y= neg_log_10_p, colour = legend, size = fdr)) +
+geom_point(shape =1) +
+geom_text_repel(aes(label=ifelse(neg.lfc > 2.5 & neg_log_10_p > 5.5 |  neg.lfc < -2.5 & neg_log_10_p > 5 | gene == "CHD1" | gene == "MAP3K7" | legend != "not significant" & gene %in% hits & neg_log_10_p > 4, gene, "")), size=3, colour ="black", max.overlaps = Inf) +
+theme_classic() +
+scale_colour_manual(values=c("blue", "grey70", "red"), na.value="grey80") +
+    scale_size(transform = "reverse", range = c(0.1,3.5) ) +
+       labs(color = "", size = "FDR") +labs(title= "") + xlab("Log2 fold change") + ylab("-Log10 (P-value)")
+plot5
+```
+```{r}
+# plot WT HT-29
+
+plot1 <- ggplot(subset(HT29_IFNg_data, sample == "HT29_wt_IFNg_vs_ctrl_average"), aes(x=neg.lfc, y= neg_log_10_p, colour = legend, size = fdr)) +
+geom_point(shape =1) +
+geom_text_repel(aes(label=ifelse(neg.lfc > 3.5 & neg_log_10_p > 5.5 |  neg.lfc < -2.5 & neg_log_10_p > 4 | legend != "not significant" & gene %in% hits & neg_log_10_p > 4, gene, "")), size=3, colour =  "black", max.overlaps = Inf) +
+theme_classic() +
+scale_colour_manual(values=c("red", "blue", "grey70"), na.value="grey80") +
+    scale_size(transform = "reverse", range = c(0.1,3.5) ) +
+       labs(color = "", size = "FDR") +labs(title= "") + xlab("Log2 fold change") + ylab("-Log10 (P-value)")
+plot1
+
+ggsave(plot = plot1, "HT29_WT_volcano.eps", width = 6, height = 3.5, path ="/Users/mc32/Documents/Matt_Coelho/Bioinformatics/Minlib_SL_JAK1_JAK2_Cas9_Watterson/figures_export")
+```
+
+```{r}
+#compare the RNA seq with the CRISPR essentially in IFNg
+HT29_IFNg_data %>% 
+  filter(sample == "HT29_wt_IFNg_vs_ctrl_average") %>%
+  select(!c(sample))
+
+HT29_RNAseq <- as_tibble(read.csv("RNA_HT29_L2FC.csv", stringsAsFactors = FALSE, header = TRUE))
+
+HT29_RNAseq %>%
+  dplyr::count(sample)
+HT29_RNAseq
+
+HT29_RNAseq_CTRL_NT <-
+  HT29_RNAseq %>%
+  dplyr::select(gene, log2FoldChange, sample) %>%
+ dplyr:: rename(RNA_log2FoldChange=log2FoldChange) %>%
+  dplyr::filter(sample %in% c("HT29NTC_CTRL_vs_HT29NTC_IFNg24h")) %>%
+  dplyr::select(!c(sample)) %>%
+  distinct()
+
+HT29_RNAseq_CTRL <-
+  HT29_RNAseq %>%
+ dplyr::select(gene, log2FoldChange, sample) %>%
+  dplyr::rename(RNA_log2FoldChange=log2FoldChange) %>%
+  dplyr::filter(sample %in% c("HT29CHD1g2MAP3K7g1_CTRL_vs_HT29NTC_CTRL")) %>%
+  dplyr::select(!c(sample)) %>%
+  distinct()
+
+HT29_RNAseq_IFNg <-
+  HT29_RNAseq %>%
+  dplyr::select(gene, log2FoldChange, sample) %>%
+  dplyr::rename(RNA_log2FoldChange=log2FoldChange) %>%
+  dplyr::filter(sample %in% c("HT29CHD1g2MAP3K7g1_IFNg24h_vs_HT29NTC_IFNg24h")) %>%
+  dplyr::select(!c(sample)) %>%
+    distinct()
+
+CRISPR_HT29 <-
+  HT29_IFNg_data %>% 
+  filter(sample == "HT29_wt_IFNg_vs_ctrl_average") %>%
+  select(!c(sample)) %>%
+    distinct()
+```
+
+```{r}
+#left_join RNA to CRISPR
+
+IFNg_RNA_CRISPR <- left_join(CRISPR_HT29, HT29_RNAseq_IFNg) 
+CTRL_RNA_CRISPR <- left_join(CRISPR_HT29, HT29_RNAseq_CTRL) 
+NT_RNA_CRISPR <- left_join(CRISPR_HT29, HT29_RNAseq_CTRL_NT) 
+
+```
+
+```{r}
+#plot RNA vs CRISPR score
+IFNg_RNA_CRISPR
+
+plot1 <- ggplot(IFNg_RNA_CRISPR, aes(x=RNA_log2FoldChange, y= pos.lfc)) +
+geom_pointdensity(size=2) +
+geom_text_repel(aes(label=ifelse(gene %in% c("CHD1", "MAP3K7"), gene, "")), size=3, max.overlaps = Inf) +
+theme_classic() +
+    scale_colour_viridis_c() +
+  labs(colour = "Density") +
+labs(title= "RNA versus CRISPR") + xlab("RNA_log2FoldChange") + ylab("CRISPR_log2FoldChange")
+plot1
+
+plot2 <- ggplot(CTRL_RNA_CRISPR, aes(x=RNA_log2FoldChange, y= pos.lfc)) +
+geom_pointdensity(size=2) +
+geom_text_repel(aes(label=ifelse(gene %in% c("CHD1", "MAP3K7") | RNA_log2FoldChange < -0.5 & pos.lfc < -0.5, gene, "")), size=3, max.overlaps = Inf) +
+theme_classic() +
+    scale_colour_viridis_c() +
+  labs(colour = "Density") +
+labs(title= "RNA versus CRISPR") + xlab("RNA_log2FoldChange") + ylab("CRISPR_log2FoldChange")
+plot2
+
+plot3 <- ggplot(NT_RNA_CRISPR, aes(x=RNA_log2FoldChange, y= pos.lfc, size = fdr)) +
+geom_pointdensity() +
+geom_text_repel(aes(label=ifelse(gene %in% c("CHD1", "MAP3K7")| RNA_log2FoldChange < -1 & pos.lfc > 1 | RNA_log2FoldChange < -1 & pos.lfc < -1, gene, "")), size=3, max.overlaps = Inf) +
+theme_classic() +
+    scale_colour_viridis_c() +
+       labs(color = "Density", size = "FDR") +
+labs(title= "RNA versus CRISPR") + xlab("RNA_log2FoldChange") + ylab("CRISPR_log2FoldChange") +
+    scale_size(transform = "reverse", range = c(0.1,3.5) )
+plot3
+```
+
+```{r}
+# bind all average dataframes together
+#IL6
+IL6_average <-
+  bind_rows(
+  lst(
+    HT29_wt_IL6_vs_ctrl_average, HT29_wt_IL6_vs_JAK1c1_IL6_average, HT29_wt_IL6_vs_JAK1c3_IL6_average, HT29_JAK1c3_IL6_vs_JAK1c1_IL6_average, HT29_wt_IL6_vs_JAK2A11_IL6_average, HT29_wt_IL6_vs_JAK2F4_IL6_average, HT29_JAK2F4_IL6_vs_JAK2A11_IL6_average,
+    SKMEL2_wt_IL6_vs_ctrl_average, SKMEL2_wt_IL6_vs_JAK1C8_IL6_average, SKMEL2_wt_IL6_vs_JAK1B8_IL6_average, SKMEL2_JAK1B8_IL6_vs_JAK1C8_IL6_average, SKMEL2_wt_IL6_vs_JAK2D5_IL6_average, SKMEL2_wt_IL6_vs_JAK2C4_IL6_average, SKMEL2_JAK2C4_IL6_vs_JAK2D5_IL6_average,
+    A375_wt_IL6_vs_ctrl_average, A375_wt_IL6_vs_JAK1B10_IL6_average, A375_wt_IL6_vs_JAK1E8_IL6_average, A375_JAK1B10_IL6_vs_JAK1E8_IL6_average, A375_wt_IL6_vs_JAK2D9_IL6_average, A375_wt_IL6_vs_JAK2D10_IL6_average, A375_JAK2D10_IL6_vs_JAK2D9_IL6_average
+    ), 
+  .id = "sample")
+```
+
+```{r}
+# change the variables in the merged mageck datatable to interpreatble values
+IL6_average <- dplyr::rename(IL6_average, gene = id)
+ IL6_average <- mutate(IL6_average, pvalue = ifelse(neg.lfc< 0, neg.p.value, pos.p.value))
+ IL6_average <- mutate(IL6_average, fdr = ifelse(neg.lfc< 0, neg.fdr, pos.fdr))
+ IL6_average <- mutate(IL6_average, neg_log_10_p = (-1*log10(pvalue)))
+ IL6_average <- mutate(IL6_average, legend = ifelse(neg.lfc>0 & pvalue <0.05 & fdr <0.1, "KO confers resistance", ifelse(neg.lfc<0 & pvalue <0.05 & fdr <0.1, "KO confers sensitisation", "not significant")))
+
+IL6_average
+```
+
+```{r}
+# IL6 -volcano plot
+pos = position_jitter(width = 0.2, height = 0.2, seed = 2)
+
+plot1 <- ggplot(IL6_average, aes(x=neg.lfc, y= neg_log_10_p, colour = legend)) +
+geom_point(size=3, position = pos) +
+geom_text_repel(aes(label=ifelse(pvalue < 0.05 & fdr <0.1, gene, "")), size=3, position=pos, max.overlaps = Inf) +
+theme_classic() +
+  facet_wrap(~sample, ncol =7) +
+scale_colour_manual(values=c("royalblue1","salmon", "grey45"), na.value="grey80") +
+labs(title= "IL-6 screens") + xlab("Log2 fold change") + ylab("-Log10 (P-value)")
+plot1
+```
+
+```{r}
+# bind all average dataframes together
+#ctrl
+ctrl_average <-
+  bind_rows(
+  lst(
+    HT29_wt_ctrl_vs_JAK1c1_ctrl_average, HT29_wt_ctrl_vs_JAK1c3_ctrl_average, HT29_JAK1c3_ctrl_vs_JAK1c1_ctrl_average, HT29_wt_ctrl_vs_JAK2A11_ctrl_average, HT29_wt_ctrl_vs_JAK2F4_ctrl_average, HT29_JAK2F4_ctrl_vs_JAK2A11_ctrl_average, HT29_wt_ctrl_vs_plasmid_average,
+    SKMEL2_wt_ctrl_vs_JAK1C8_ctrl_average, SKMEL2_wt_ctrl_vs_JAK1B8_ctrl_average, SKMEL2_JAK1B8_ctrl_vs_JAK1C8_ctrl_average, SKMEL2_wt_ctrl_vs_JAK2D5_ctrl_average, SKMEL2_wt_ctrl_vs_JAK2C4_ctrl_average, SKMEL2_JAK2C4_ctrl_vs_JAK2D5_ctrl_average, SKMEL2_wt_ctrl_vs_plasmid_average,
+    A375_wt_ctrl_vs_JAK1B10_ctrl_average, A375_wt_ctrl_vs_JAK1E8_ctrl_average, A375_JAK1B10_ctrl_vs_JAK1E8_ctrl_average, A375_wt_ctrl_vs_JAK2D9_ctrl_average, A375_wt_ctrl_vs_JAK2D10_ctrl_average, A375_JAK2D10_ctrl_vs_JAK2D9_ctrl_average, A375_wt_ctrl_vs_plasmid_average
+    ), 
+  .id = "sample")
+```
+
+```{r}
+# change the variables in the merged mageck data table to interpretable values
+ctrl_average <- dplyr::rename(ctrl_average, gene = id)
+ ctrl_average <- mutate(ctrl_average, pvalue = ifelse(neg.lfc< 0, neg.p.value, pos.p.value))
+ ctrl_average <- mutate(ctrl_average, fdr = ifelse(neg.lfc< 0, neg.fdr, pos.fdr))
+ ctrl_average <- mutate(ctrl_average, neg_log_10_p = (-1*log10(pvalue)))
+ ctrl_average <- mutate(ctrl_average, legend = ifelse(neg.lfc>0 & pvalue <0.05 & fdr <0.1, "KO confers resistance", ifelse(neg.lfc<0 & pvalue <0.05 & fdr <0.1, "KO confers sensitisation", "not significant")))
+
+ctrl_average
+```
+
+```{r}
+# ctrl -volcano plot
+pos = position_jitter(width = 0.2, height = 0.2, seed = 2)
+
+plot1 <- ggplot(ctrl_average, aes(x=neg.lfc, y= neg_log_10_p, colour = legend)) +
+geom_point(size=3, position = pos) +
+geom_text_repel(aes(label=ifelse(pvalue < 0.05 & fdr <0.1, gene, "")), size=3, position=pos, max.overlaps = Inf) +
+theme_classic() +
+  facet_wrap(~sample, ncol =6) +
+scale_colour_manual(values=c("royalblue1","salmon", "grey45"), na.value="grey80") +
+labs(title= "control screens") + xlab("Log2 fold change") + ylab("-Log10 (P-value)")
+plot1
+```
+
+```{r}
+# investigation of hits
+
+ HT29_cntrl <- ctrl_average %>% 
+  filter(legend != ("not significant")) %>%
+  filter(str_detect(sample, "HT29")) %>%
+  select(gene, sample, legend) %>%
+  distinct 
+
+A375_cntrl <-ctrl_average %>% 
+  filter(legend != ("not significant")) %>%
+  filter(str_detect(sample, "A375")) %>%
+  select(gene, sample, legend) %>%
+  distinct 
+
+SKMEL2_cntrl <-ctrl_average %>% 
+  filter(legend != ("not significant")) %>%
+  filter(str_detect(sample, "SKMEL2")) %>%
+  select(gene, sample, legend) %>%
+  distinct
+
+HT29_cntrl
+A375_cntrl
+SKMEL2_cntrl
+
+SKMEL2_cntrl_1 <- 
+  SKMEL2_cntrl %>%
+  filter(legend == "KO confers resistance") %>%
+  filter(sample == "SKMEL2_wt_ctrl_vs_JAK1C8_ctrl_average") %>%
+  select(gene, legend) %>%
+  distinct()
+
+SKMEL2_cntrl_2 <- 
+  SKMEL2_cntrl %>%
+  filter(legend == "KO confers resistance") %>%
+  filter(sample == "SKMEL2_wt_ctrl_vs_JAK1B8_ctrl_average") %>%
+  select(gene, legend) %>%
+  distinct()
+
+SKMEL2_cntrl_3 <- 
+  SKMEL2_cntrl %>%
+  filter(legend == "KO confers resistance") %>%
+  filter(sample == "SKMEL2_wt_ctrl_vs_JAK2D5_ctrl_average") %>%
+  select(gene, legend) %>%
+  distinct()
+
+SKMEL2_cntrl_4 <-
+  SKMEL2_cntrl %>%
+  filter(legend == "KO confers resistance") %>%
+  filter(sample == "SKMEL2_wt_ctrl_vs_JAK2C4_ctrl_average") %>%
+  select(gene, legend) %>%
+  distinct()
+
+inner_join(SKMEL2_cntrl_1, SKMEL2_cntrl_2)
+inner_join(SKMEL2_cntrl_1, SKMEL2_cntrl_3)
+inner_join(SKMEL2_cntrl_1, SKMEL2_cntrl_4)
+inner_join(SKMEL2_cntrl_2, SKMEL2_cntrl_3)
+inner_join(SKMEL2_cntrl_2, SKMEL2_cntrl_4)
+inner_join(SKMEL2_cntrl_3, SKMEL2_cntrl_4)
+```
+
+```{r}
+# label common hits in SKMEL2 screens
+SKMEL2_ctrl_data <- 
+  ctrl_average %>%
+  filter(sample %in% c("SKMEL2_wt_ctrl_vs_JAK1B8_ctrl_average", "SKMEL2_wt_ctrl_vs_JAK1C8_ctrl_average", "SKMEL2_wt_ctrl_vs_JAK2C4_ctrl_average", "SKMEL2_wt_ctrl_vs_JAK2D5_ctrl_average"))
+```
+
+```{r}
+# ctrl -volcano plot
+pos = position_jitter(width = 0.2, height = 0.2, seed = 2)
+
+plot1 <- ggplot(SKMEL2_ctrl_data, aes(x=neg.lfc, y= neg_log_10_p, colour = legend)) +
+geom_point(size=3, position = pos) +
+geom_text_repel(aes(label=ifelse(legend !="not significant" & gene %in% c("U2AF1", "CARS1", "VPS28", "MTREX", "LIG1"), gene, "")), size=3, position=pos, max.overlaps = Inf) +
+theme_classic() +
+  facet_wrap(~sample, ncol =6) +
+scale_colour_manual(values=c("royalblue1","salmon", "grey45"), na.value="grey80") +
+labs(title= "control screens") + xlab("Log2 fold change") + ylab("-Log10 (P-value)")
+plot1
+
+plot2 <- ggplot(subset(SKMEL2_ctrl_data, sample == "SKMEL2_wt_ctrl_vs_JAK2C4_ctrl_average"), aes(x=neg.lfc, y= neg_log_10_p, colour = legend)) +
+geom_point(size=3, position = pos) +
+geom_text_repel(aes(label=ifelse(legend !="not significant" & gene %in% c("U2AF1", "CARS1", "VPS28", "MTREX", "LIG1"), gene, "")), size=3, position=pos, max.overlaps = Inf) +
+theme_classic() +
+scale_colour_manual(values=c("red", "grey65", "royalblue1"), na.value="grey80") +
+labs(title= "") + xlab("Log2 fold change") + ylab("-Log10 (P-value)")
+plot2
+
+```
+
+```{r}
+# essentiality screens vs plasmid in HT-29, SK-MEL2 and A375
+
+plot1 <- ggplot(subset(ctrl_average, sample == "HT29_wt_ctrl_vs_plasmid_average"), aes(x=neg.lfc, y= neg_log_10_p, colour = legend)) +
+geom_point(size=3, position = pos) +
+geom_text_repel(aes(label=ifelse(legend !="not significant" & gene %in% c("U2AF1", "CARS1", "YARS1", "VPS28", "MTREX", "LIG1", "CHD1", "MAP3K7", "ELOB"), gene, "")), size=3, position=pos, max.overlaps = Inf) +
+theme_classic() +
+scale_colour_manual(values=c("royalblue1","salmon", "grey45"), na.value="grey80") +
+labs(title= "control screens") + xlab("Log2 fold change") + ylab("-Log10 (P-value)")
+plot1
+
+plot2 <- ggplot(subset(ctrl_average, sample == "A375_wt_ctrl_vs_plasmid_average"), aes(x=neg.lfc, y= neg_log_10_p, colour = legend)) +
+geom_point(size=3, position = pos) +
+geom_text_repel(aes(label=ifelse(legend !="not significant" & gene %in% c("U2AF1", "CARS1", "YARS1", "VPS28", "MTREX", "LIG1", "CHD1", "MAP3K7", "ELOB"), gene, "")), size=3, position=pos, max.overlaps = Inf) +
+theme_classic() +
+scale_colour_manual(values=c("royalblue1","salmon", "grey45"), na.value="grey80") +
+labs(title= "control screens") + xlab("Log2 fold change") + ylab("-Log10 (P-value)")
+plot2
+
+plot3 <- ggplot(subset(ctrl_average, sample == "SKMEL2_wt_ctrl_vs_plasmid_average"), aes(x=neg.lfc, y= neg_log_10_p, colour = legend)) +
+geom_point(size=3, position = pos) +
+geom_text_repel(aes(label=ifelse(legend !="not significant" & gene %in% c("U2AF1", "CARS1", "YARS1", "VPS28", "MTREX", "LIG1", "CHD1", "MAP3K7", "ELOB"), gene, "")), size=3, position=pos, max.overlaps = Inf) +
+theme_classic() +
+scale_colour_manual(values=c("royalblue1","salmon", "grey45"), na.value="grey80") +
+labs(title= "control screens") + xlab("Log2 fold change") + ylab("-Log10 (P-value)")
+plot3
+```
+
+```{r}
+# HT29 control vs IFNg
+CTRL_LFC_HT29 <-
+  ctrl_average %>% 
+  filter(sample == "HT29_wt_ctrl_vs_plasmid_average") %>%
+  dplyr::rename(ctrl_L2FC = neg.lfc) %>%
+  select(gene, ctrl_L2FC)
+ 
+IFNG_LFC_HT29 <-
+IFNg_average %>% 
+  filter(sample == "HT29_wt_IFNg_vs_ctrl_average") %>%
+  dplyr::rename(ifng_L2FC = neg.lfc) %>%
+  select(gene, ifng_L2FC)
+
+essentiality_scores <- left_join(CTRL_LFC_HT29, IFNG_LFC_HT29)
+```
+
+```{r}
+# plot essentiality scores for HT29 vs IFNg
+essentiality_scores
+
+plot1 <- ggplot(essentiality_scores, aes(x=ctrl_L2FC, y= ifng_L2FC)) +
+geom_pointdensity(size=2, shape = 16) +
+theme_classic() +
+labs(title= "") + xlab("HT-29 control versus plasmid (log2 fold-change)") + ylab("HT-29 IFN-g versus plasmid (log2 fold-change)") +
+labs(colour = "Density") +
+scale_colour_viridis_c() +
+geom_text_repel(aes(label=ifelse(ifng_L2FC > 2.7 | ifng_L2FC < -3 | ifng_L2FC > 1.6 & ctrl_L2FC > -0.5 , gene, "")), size=3, max.overlaps = Inf)
+plot1
+```
+
+```{r}
+#replicate correlations
+# HT29 ctrl
+
+rep1 <-
+  HT29_wt_ctrl_vs_plasmid_exp1 %>%
+  mutate(L2FC_HT29_wt_ctrl_vs_plasmid_exp1 = neg.lfc) %>%
+  select(id, L2FC_HT29_wt_ctrl_vs_plasmid_exp1)
+
+rep2 <-
+  HT29_wt_ctrl_vs_plasmid_exp2 %>%
+  mutate(L2FC_HT29_wt_ctrl_vs_plasmid_exp2 = neg.lfc) %>%
+  select(id, L2FC_HT29_wt_ctrl_vs_plasmid_exp2)
+
+rep_correlation <- left_join(rep1, rep2) %>% 
+  filter(is.na(L2FC_HT29_wt_ctrl_vs_plasmid_exp1) ==FALSE & is.na(L2FC_HT29_wt_ctrl_vs_plasmid_exp2)==FALSE )
+r1 <- cor(rep_correlation$L2FC_HT29_wt_ctrl_vs_plasmid_exp1, rep_correlation$L2FC_HT29_wt_ctrl_vs_plasmid_exp2, method = "pearson")
+
+plot1 <- ggplot(rep_correlation, aes(x=L2FC_HT29_wt_ctrl_vs_plasmid_exp1, y= L2FC_HT29_wt_ctrl_vs_plasmid_exp2)) +
+geom_pointdensity(size=2) +
+#geom_text_repel(aes(label=ifelse(id %in% c("CHD1", "MAP3K7"), id, "")), size=3, max.overlaps = Inf) +
+  annotate("text", y = 5, x = 0, label = paste("r = ", round(r1, 2)), parse = FALSE, size = 6) +
+theme_classic() +
+    scale_colour_viridis_c() +
+  labs(colour = "Density") +
+labs(title= "Replicate correlation") + xlab("L2FC_HT29_wt_ctrl_vs_plasmid_exp1") + ylab("L2FC_HT29_wt_ctrl_vs_plasmid_exp2")
+plot1
+
+```
+
+```{r}
+#replicate correlations
+# HT29 IFNg
+
+rep1 <-
+  HT29_wt_IFNg_vs_ctrl_exp1 %>%
+  mutate(L2FC_HT29_wt_IFNg_vs_ctrl_exp1 = neg.lfc) %>%
+  select(id, L2FC_HT29_wt_IFNg_vs_ctrl_exp1)
+
+rep2 <-
+  HT29_wt_IFNg_vs_ctrl_exp2 %>%
+  mutate(L2FC_HT29_wt_IFNg_vs_ctrl_exp2 = neg.lfc) %>%
+  select(id, L2FC_HT29_wt_IFNg_vs_ctrl_exp2)
+
+rep_correlation <- left_join(rep1, rep2) %>% 
+  filter(is.na(L2FC_HT29_wt_IFNg_vs_ctrl_exp1) ==FALSE & is.na(L2FC_HT29_wt_IFNg_vs_ctrl_exp2)==FALSE )
+r1 <- cor(rep_correlation$L2FC_HT29_wt_IFNg_vs_ctrl_exp1, rep_correlation$L2FC_HT29_wt_IFNg_vs_ctrl_exp2, method = "pearson")
+
+plot1 <- ggplot(rep_correlation, aes(x=L2FC_HT29_wt_IFNg_vs_ctrl_exp1, y= L2FC_HT29_wt_IFNg_vs_ctrl_exp2)) +
+geom_pointdensity(size=2) +
+geom_text_repel(aes(label=ifelse(id %in% c("CHD1", "MAP3K7") | L2FC_HT29_wt_IFNg_vs_ctrl_exp1 > 2.2 & L2FC_HT29_wt_IFNg_vs_ctrl_exp2 > 2.2 | L2FC_HT29_wt_IFNg_vs_ctrl_exp1 < -2 & L2FC_HT29_wt_IFNg_vs_ctrl_exp2 < -2, id, "")), size=3, max.overlaps = Inf) +
+  annotate("text", y = 5, x = 0, label = paste("r = ", round(r1, 2)), parse = FALSE, size = 6) +
+theme_classic() +
+    scale_colour_viridis_c() +
+  labs(colour = "Density") +
+labs(title= "Replicate correlation") + xlab("L2FC_HT29_wt_IFNg_vs_ctrl_exp1") + ylab("L2FC_HT29_wt_IFNg_vs_ctrl_exp2")
+plot1
+
+```
+
+```{r}
+#replicate correlations
+# HT29 IL6
+
+rep1 <-
+  HT29_wt_IL6_vs_ctrl_exp1 %>%
+  mutate(L2FC_HT29_wt_IL6_vs_ctrl_exp1 = neg.lfc) %>%
+  select(id, L2FC_HT29_wt_IL6_vs_ctrl_exp1)
+
+rep2 <-
+  HT29_wt_IL6_vs_ctrl_exp2 %>%
+  mutate(L2FC_HT29_wt_IL6_vs_ctrl_exp2 = neg.lfc) %>%
+  select(id, L2FC_HT29_wt_IL6_vs_ctrl_exp2)
+
+rep_correlation <- left_join(rep1, rep2) %>% 
+  filter(is.na(L2FC_HT29_wt_IL6_vs_ctrl_exp1) ==FALSE & is.na(L2FC_HT29_wt_IL6_vs_ctrl_exp2)==FALSE )
+r1 <- cor(rep_correlation$L2FC_HT29_wt_IL6_vs_ctrl_exp1, rep_correlation$L2FC_HT29_wt_IL6_vs_ctrl_exp2, method = "pearson")
+
+plot1 <- ggplot(rep_correlation, aes(x=L2FC_HT29_wt_IL6_vs_ctrl_exp1, y= L2FC_HT29_wt_IL6_vs_ctrl_exp2)) +
+geom_pointdensity(size=2) +
+#geom_text_repel(aes(label=ifelse(id %in% c("CHD1", "MAP3K7"), id, "")), size=3, max.overlaps = Inf) +
+  annotate("text", y = 5, x = 0, label = paste("r = ", round(r1, 2)), parse = FALSE, size = 6) +
+theme_classic() +
+    scale_colour_viridis_c() +
+  labs(colour = "Density") +
+labs(title= "Replicate correlation") + xlab("L2FC_HT29_wt_IL6_vs_ctrl_exp1") + ylab("L2FC_HT29_wt_IL6_vs_ctrl_exp2")
+plot1
+
+```
+```{r}
+#replicate correlations
+# SKMEL2 ctrl
+
+rep1 <-
+  SKMEL2_wt_ctrl_vs_plasmid_exp1 %>%
+  mutate(L2FC_SKMEL2_wt_ctrl_vs_plasmid_exp1 = neg.lfc) %>%
+  select(id, L2FC_SKMEL2_wt_ctrl_vs_plasmid_exp1)
+
+rep2 <-
+  SKMEL2_wt_ctrl_vs_plasmid_exp2 %>%
+  mutate(L2FC_SKMEL2_wt_ctrl_vs_plasmid_exp2 = neg.lfc) %>%
+  select(id, L2FC_SKMEL2_wt_ctrl_vs_plasmid_exp2)
+
+rep_correlation <- left_join(rep1, rep2) %>% 
+  filter(is.na(L2FC_SKMEL2_wt_ctrl_vs_plasmid_exp1) ==FALSE & is.na(L2FC_SKMEL2_wt_ctrl_vs_plasmid_exp2)==FALSE )
+r1 <- cor(rep_correlation$L2FC_SKMEL2_wt_ctrl_vs_plasmid_exp1, rep_correlation$L2FC_SKMEL2_wt_ctrl_vs_plasmid_exp2, method = "pearson")
+
+plot1 <- ggplot(rep_correlation, aes(x=L2FC_SKMEL2_wt_ctrl_vs_plasmid_exp1, y= L2FC_SKMEL2_wt_ctrl_vs_plasmid_exp2)) +
+geom_pointdensity(size=2) +
+#geom_text_repel(aes(label=ifelse(id %in% c("CHD1", "MAP3K7"), id, "")), size=3, max.overlaps = Inf) +
+  annotate("text", y = 5, x = 0, label = paste("r = ", round(r1, 2)), parse = FALSE, size = 6) +
+theme_classic() +
+    scale_colour_viridis_c() +
+  labs(colour = "Density") +
+labs(title= "Replicate correlation") + xlab("L2FC_SKMEL2_wt_ctrl_vs_plasmid_exp1") + ylab("L2FC_SKMEL2_wt_ctrl_vs_plasmid_exp2")
+plot1
+
+```
+
+```{r}
+#replicate correlations
+# SKMEL2 IFNg
+
+rep1 <-
+  SKMEL2_wt_IFNg_vs_ctrl_exp1 %>%
+  mutate(L2FC_SKMEL2_wt_IFNg_vs_ctrl_exp1 = neg.lfc) %>%
+  select(id, L2FC_SKMEL2_wt_IFNg_vs_ctrl_exp1)
+
+rep2 <-
+  SKMEL2_wt_IFNg_vs_ctrl_exp2 %>%
+  mutate(L2FC_SKMEL2_wt_IFNg_vs_ctrl_exp2 = neg.lfc) %>%
+  select(id, L2FC_SKMEL2_wt_IFNg_vs_ctrl_exp2)
+
+rep_correlation <- left_join(rep1, rep2) %>% 
+  filter(is.na(L2FC_SKMEL2_wt_IFNg_vs_ctrl_exp1) ==FALSE & is.na(L2FC_SKMEL2_wt_IFNg_vs_ctrl_exp2)==FALSE )
+r1 <- cor(rep_correlation$L2FC_SKMEL2_wt_IFNg_vs_ctrl_exp1, rep_correlation$L2FC_SKMEL2_wt_IFNg_vs_ctrl_exp2, method = "pearson")
+
+plot1 <- ggplot(rep_correlation, aes(x=L2FC_SKMEL2_wt_IFNg_vs_ctrl_exp1, y= L2FC_SKMEL2_wt_IFNg_vs_ctrl_exp2)) +
+geom_pointdensity(size=2) +
+geom_text_repel(aes(label=ifelse(id %in% c("CHD1", "MAP3K7") | L2FC_SKMEL2_wt_IFNg_vs_ctrl_exp1 > 2.1 & L2FC_SKMEL2_wt_IFNg_vs_ctrl_exp2 > 2.1 | L2FC_SKMEL2_wt_IFNg_vs_ctrl_exp1 < -2.5 & L2FC_SKMEL2_wt_IFNg_vs_ctrl_exp2 < -2.5, id, "")), size=3, max.overlaps = Inf) +
+  annotate("text", y = 5, x = 0, label = paste("r = ", round(r1, 2)), parse = FALSE, size = 6) +
+theme_classic() +
+    scale_colour_viridis_c() +
+  labs(colour = "Density") +
+labs(title= "Replicate correlation") + xlab("L2FC_SKMEL2_wt_IFNg_vs_ctrl_exp1") + ylab("L2FC_SKMEL2_wt_IFNg_vs_ctrl_exp2")
+plot1
+
+```
+
+```{r}
+#replicate correlations
+# SKMEL2 IL6
+
+rep1 <-
+  SKMEL2_wt_IL6_vs_ctrl_exp1 %>%
+  mutate(L2FC_SKMEL2_wt_IL6_vs_ctrl_exp1 = neg.lfc) %>%
+  select(id, L2FC_SKMEL2_wt_IL6_vs_ctrl_exp1)
+
+rep2 <-
+  SKMEL2_wt_IL6_vs_ctrl_exp2 %>%
+  mutate(L2FC_SKMEL2_wt_IL6_vs_ctrl_exp2 = neg.lfc) %>%
+  select(id, L2FC_SKMEL2_wt_IL6_vs_ctrl_exp2)
+
+rep_correlation <- left_join(rep1, rep2) %>% 
+  filter(is.na(L2FC_SKMEL2_wt_IL6_vs_ctrl_exp1) ==FALSE & is.na(L2FC_SKMEL2_wt_IL6_vs_ctrl_exp2)==FALSE )
+r1 <- cor(rep_correlation$L2FC_SKMEL2_wt_IL6_vs_ctrl_exp1, rep_correlation$L2FC_SKMEL2_wt_IL6_vs_ctrl_exp2, method = "pearson")
+
+plot1 <- ggplot(rep_correlation, aes(x=L2FC_SKMEL2_wt_IL6_vs_ctrl_exp1, y= L2FC_SKMEL2_wt_IL6_vs_ctrl_exp2)) +
+geom_pointdensity(size=2) +
+#geom_text_repel(aes(label=ifelse(id %in% c("CHD1", "MAP3K7"), id, "")), size=3, max.overlaps = Inf) +
+  annotate("text", y = 5, x = 0, label = paste("r = ", round(r1, 2)), parse = FALSE, size = 6) +
+theme_classic() +
+    scale_colour_viridis_c() +
+  labs(colour = "Density") +
+labs(title= "Replicate correlation") + xlab("L2FC_SKMEL2_wt_IL6_vs_ctrl_exp1") + ylab("L2FC_SKMEL2_wt_IL6_vs_ctrl_exp2")
+plot1
+
+```
+
+```{r}
+#plot the essentiality of the IFNb SL hits in the JAK2 KO cells
+# SKMEL2_wt_IFNb_vs_JAK2C4_IFNb_average
+
+KO <-
+  SKMEL2_wt_ctrl_vs_JAK2C4_ctrl_average %>%
+  mutate(SKMEL2_wt_ctrl_vs_JAK2C4_ctrl_average = neg.lfc) %>%
+  select(id, SKMEL2_wt_ctrl_vs_JAK2C4_ctrl_average)
+
+WT <-
+  SKMEL2_wt_ctrl_vs_plasmid_average %>%
+  mutate(SKMEL2_wt_ctrl_vs_plasmid_average = neg.lfc) %>%
+  select(id, SKMEL2_wt_ctrl_vs_plasmid_average)
+
+rep_correlation <- left_join(KO, WT)
+
+plot1 <- ggplot(rep_correlation, aes(x=SKMEL2_wt_ctrl_vs_plasmid_average, y= SKMEL2_wt_ctrl_vs_JAK2C4_ctrl_average)) +
+geom_pointdensity(size=3) +
+geom_text_repel(aes(label=ifelse(id %in% c("CHD1", "MAP3K7")| SKMEL2_wt_ctrl_vs_JAK2C4_ctrl_average >2 & SKMEL2_wt_ctrl_vs_plasmid_average < -1 , id, "")), size=3, max.overlaps = Inf) +
+theme_classic() +
+    scale_colour_viridis_c() +
+    labs(colour = "Density") +
+labs(title= "Gene essentiality WT vs JAK2 KO") + xlab("SK-MEL-2 WT versus plasmid") + ylab("SK-MEL-2 WT versus JAK2 KO")
+plot1
+```
+```{r}
+#plot the essentiality of the IFNb SL hits in the JAK2 KO cells
+# SKMEL2_wt_IFNb_vs_JAK2C4_IFNb_average
+
+KO <-
+  SKMEL2_JAK2C4_ctrl_vs_plasmid_average %>%
+  mutate(SKMEL2_JAK2C4_ctrl_vs_plasmid_average = neg.lfc) %>%
+  select(id, SKMEL2_JAK2C4_ctrl_vs_plasmid_average)
+
+WT <-
+  SKMEL2_wt_ctrl_vs_plasmid_average %>%
+  mutate(SKMEL2_wt_ctrl_vs_plasmid_average = neg.lfc) %>%
+  select(id, SKMEL2_wt_ctrl_vs_plasmid_average)
+
+rep_correlation <- left_join(KO, WT)
+
+plot1 <- ggplot(rep_correlation, aes(x=SKMEL2_wt_ctrl_vs_plasmid_average, y= SKMEL2_JAK2C4_ctrl_vs_plasmid_average)) +
+geom_pointdensity(size=3) +
+geom_text_repel(aes(label=ifelse(id %in% c("CHD1", "MAP3K7", "VPS28", "MTREX", "YARS1", "MARS1", "CHMP2A")| SKMEL2_JAK2C4_ctrl_vs_plasmid_average < -4 & SKMEL2_wt_ctrl_vs_plasmid_average > -2 , id, "")), size=3, max.overlaps = Inf) +
+theme_classic() +
+    scale_colour_viridis_c() +
+labs(title= "Gene essentiality WT vs JAK2 KO") + xlab("SK-MEL-2 WT versus plasmid") + ylab("SK-MEL-2 WT versus JAK2 KO")
+plot1
+```
+
+```{r}
+#replicate correlations
+# SKMEL2 beta
+
+rep1 <-
+  SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_exp1 %>%
+  mutate(L2FC_SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_exp1 = neg.lfc) %>%
+  select(id, L2FC_SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_exp1)
+
+rep2 <-
+  SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_exp2 %>%
+  mutate(L2FC_SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_exp2 = neg.lfc) %>%
+  select(id, L2FC_SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_exp2)
+
+rep_correlation <- left_join(rep1, rep2) %>% 
+  filter(is.na(L2FC_SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_exp1) ==FALSE & is.na(L2FC_SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_exp2)==FALSE )
+r1 <- cor(rep_correlation$L2FC_SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_exp1, rep_correlation$L2FC_SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_exp2, method = "pearson")
+  
+rep_correlation <- left_join(rep1, rep2)
+
+plot1 <- ggplot(rep_correlation, aes(x=L2FC_SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_exp1, y= L2FC_SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_exp2)) +
+geom_pointdensity(size=2) +
+geom_text_repel(aes(label=ifelse(id %in% c("CHD1", "MAP3K7"), id, "")), size=3, max.overlaps = Inf) +
+theme_classic() +
+    annotate("text", y = 5, x = 0, label = paste("r = ", round(r1, 2)), parse = FALSE, size = 6) +
+      scale_colour_viridis_c() +
+    labs(colour = "Density") +
+  geom_text_repel(aes(label=ifelse(id %in% c("CHD1", "MAP3K7") | L2FC_SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_exp1 > 2.1 & L2FC_SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_exp2 > 2.1 | L2FC_SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_exp1 < -2.5 & L2FC_SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_exp2 < -2.5, id, "")), size=3, max.overlaps = Inf) +
+labs(title= "Replicate correlation") + xlab("L2FC_SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_exp1") + ylab("L2FC_SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_exp2")
+plot1
+
+```
+
+```{r}
+#replicate correlations
+# A375 ctrl
+
+rep1 <-
+  A375_wt_ctrl_vs_plasmid_exp1 %>%
+  mutate(L2FC_A375_wt_ctrl_vs_plasmid_exp1 = neg.lfc) %>%
+  select(id, L2FC_A375_wt_ctrl_vs_plasmid_exp1)
+
+rep2 <-
+  A375_wt_ctrl_vs_plasmid_exp2 %>%
+  mutate(L2FC_A375_wt_ctrl_vs_plasmid_exp2 = neg.lfc) %>%
+  select(id, L2FC_A375_wt_ctrl_vs_plasmid_exp2)
+
+rep_correlation <- left_join(rep1, rep2) %>% 
+  filter(is.na(L2FC_A375_wt_ctrl_vs_plasmid_exp1) ==FALSE & is.na(L2FC_A375_wt_ctrl_vs_plasmid_exp2)==FALSE )
+r1 <- cor(rep_correlation$L2FC_A375_wt_ctrl_vs_plasmid_exp1, rep_correlation$L2FC_A375_wt_ctrl_vs_plasmid_exp2, method = "pearson")
+
+plot1 <- ggplot(rep_correlation, aes(x=L2FC_A375_wt_ctrl_vs_plasmid_exp1, y= L2FC_A375_wt_ctrl_vs_plasmid_exp2)) +
+geom_pointdensity(size=2) +
+#geom_text_repel(aes(label=ifelse(id %in% c("CHD1", "MAP3K7"), id, "")), size=3, max.overlaps = Inf) +
+  annotate("text", y = 5, x = 0, label = paste("r = ", round(r1, 2)), parse = FALSE, size = 6) +
+theme_classic() +
+    scale_colour_viridis_c() +
+  labs(colour = "Density") +
+labs(title= "Replicate correlation") + xlab("L2FC_A375_wt_ctrl_vs_plasmid_exp1") + ylab("L2FC_A375_wt_ctrl_vs_plasmid_exp2")
+plot1
+
+```
+
+```{r}
+#replicate correlations
+# A375 IFNg
+
+rep1 <-
+  A375_wt_IFNg_vs_ctrl_exp1 %>%
+  mutate(L2FC_A375_wt_IFNg_vs_ctrl_exp1 = neg.lfc) %>%
+  select(id, L2FC_A375_wt_IFNg_vs_ctrl_exp1)
+
+rep2 <-
+  A375_wt_IFNg_vs_ctrl_exp2 %>%
+  mutate(L2FC_A375_wt_IFNg_vs_ctrl_exp2 = neg.lfc) %>%
+  select(id, L2FC_A375_wt_IFNg_vs_ctrl_exp2)
+
+rep_correlation <- left_join(rep1, rep2) %>% 
+  filter(is.na(L2FC_A375_wt_IFNg_vs_ctrl_exp1) ==FALSE & is.na(L2FC_A375_wt_IFNg_vs_ctrl_exp2)==FALSE )
+r1 <- cor(rep_correlation$L2FC_A375_wt_IFNg_vs_ctrl_exp1, rep_correlation$L2FC_A375_wt_IFNg_vs_ctrl_exp2, method = "pearson")
+
+plot1 <- ggplot(rep_correlation, aes(x=L2FC_A375_wt_IFNg_vs_ctrl_exp1, y= L2FC_A375_wt_IFNg_vs_ctrl_exp2)) +
+geom_pointdensity(size=2) +
+geom_text_repel(aes(label=ifelse(id %in% c("CHD1", "MAP3K7") | L2FC_A375_wt_IFNg_vs_ctrl_exp1 > 2.1 & L2FC_A375_wt_IFNg_vs_ctrl_exp2 > 2.1 | L2FC_A375_wt_IFNg_vs_ctrl_exp1 < -2 & L2FC_A375_wt_IFNg_vs_ctrl_exp2 < -2, id, "")), size=3, max.overlaps = Inf) +
+  annotate("text", y = 5, x = 0, label = paste("r = ", round(r1, 2)), parse = FALSE, size = 6) +
+theme_classic() +
+    scale_colour_viridis_c() +
+  labs(colour = "Density") +
+labs(title= "Replicate correlation") + xlab("L2FC_A375_wt_IFNg_vs_ctrl_exp1") + ylab("L2FC_A375_wt_IFNg_vs_ctrl_exp2")
+plot1
+```
+
+```{r}
+#replicate correlations
+#replicate correlations
+# A375 IL6
+
+rep1 <-
+  A375_wt_IL6_vs_ctrl_exp1 %>%
+  mutate(L2FC_A375_wt_IL6_vs_ctrl_exp1 = neg.lfc) %>%
+  select(id, L2FC_A375_wt_IL6_vs_ctrl_exp1)
+
+rep2 <-
+  A375_wt_IL6_vs_ctrl_exp2 %>%
+  mutate(L2FC_A375_wt_IL6_vs_ctrl_exp2 = neg.lfc) %>%
+  select(id, L2FC_A375_wt_IL6_vs_ctrl_exp2)
+
+rep_correlation <- left_join(rep1, rep2) %>% 
+  filter(is.na(L2FC_A375_wt_IL6_vs_ctrl_exp1) ==FALSE & is.na(L2FC_A375_wt_IL6_vs_ctrl_exp2)==FALSE )
+r1 <- cor(rep_correlation$L2FC_A375_wt_IL6_vs_ctrl_exp1, rep_correlation$L2FC_A375_wt_IL6_vs_ctrl_exp2, method = "pearson")
+
+plot1 <- ggplot(rep_correlation, aes(x=L2FC_A375_wt_IL6_vs_ctrl_exp1, y= L2FC_A375_wt_IL6_vs_ctrl_exp2)) +
+geom_pointdensity(size=2) +
+geom_text_repel(aes(label=ifelse(id %in% c("CHD1", "MAP3K7") | L2FC_A375_wt_IL6_vs_ctrl_exp1 > 2.1 & L2FC_A375_wt_IL6_vs_ctrl_exp2 > 2.1 | L2FC_A375_wt_IL6_vs_ctrl_exp1 < -2 & L2FC_A375_wt_IL6_vs_ctrl_exp2 < -2, id, "")), size=3, max.overlaps = Inf) +
+  annotate("text", y = 5, x = 0, label = paste("r = ", round(r1, 2)), parse = FALSE, size = 6) +
+theme_classic() +
+    scale_colour_viridis_c() +
+  labs(colour = "Density") +
+labs(title= "Replicate correlation") + xlab("L2FC_A375_wt_IL6_vs_ctrl_exp1") + ylab("L2FC_A375_wt_IL6_vs_ctrl_exp2")
+plot1
+```
+
+```{r}
+# bind all average dataframes together
+#IFNb
+IFNb_average <-
+  bind_rows(
+  lst(
+    SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average, SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average, SKMEL2_JAK1B8_IFNb_vs_JAK1C8_IFNb_average, SKMEL2_wt_IFNb_vs_JAK2D5_IFNb_average, SKMEL2_wt_IFNb_vs_JAK2C4_IFNb_average, SKMEL2_JAK2C4_IFNb_vs_JAK2D5_IFNb_average
+    ), 
+  .id = "sample")
+```
+
+```{r}
+# change the variables in the merged mageck datatable to interpreatble values
+IFNb_average <- dplyr::rename(IFNb_average, gene = id)
+ IFNb_average <- mutate(IFNb_average, pvalue = ifelse(neg.lfc< 0, neg.p.value, pos.p.value))
+ IFNb_average <- mutate(IFNb_average, fdr = ifelse(neg.lfc< 0, neg.fdr, pos.fdr))
+ IFNb_average <- mutate(IFNb_average, neg_log_10_p = (-1*log10(pvalue)))
+ IFNb_average <- mutate(IFNb_average, legend = ifelse(neg.lfc>0 & pvalue <0.05 & fdr <0.1, "KO confers resistance", ifelse(neg.lfc<0 & pvalue <0.05 & fdr <0.1, "KO confers sensitisation", "not significant")))
+
+IFNb_average
+```
+
+```{r}
+# IFNb -volcano plot
+
+ctrl_average_graph <-
+  ctrl_average %>% 
+  filter(sample == "SKMEL2_wt_ctrl_vs_JAK2C4_ctrl_average") %>%
+  mutate(legend = ifelse(legend == "KO confers resistance", "JAK2 KO more sensitive", legend))
+
+ctrl_average_graph2 <-
+  ctrl_average %>% 
+  filter(sample == "SKMEL2_wt_ctrl_vs_JAK1B8_ctrl_average") %>%
+  mutate(legend = ifelse(legend == "KO confers resistance", "JAK1 KO more sensitive", legend))
+
+ctrl_average_graph3 <-
+  ctrl_average %>% 
+  filter(sample == "SKMEL2_wt_ctrl_vs_JAK1C8_ctrl_average") %>%
+  mutate(legend = ifelse(legend == "KO confers resistance", "JAK1 KO more sensitive", ifelse(legend == "KO confers sensitisation", "JAK1 KO more resistant", legend)))
+
+IFNb_average_graph <-
+  IFNb_average %>% 
+  filter(sample == "SKMEL2_wt_IFNb_vs_JAK2C4_IFNb_average") %>%
+  mutate(legend = ifelse(legend == "KO confers resistance", "JAK2 KO more sensitive", legend))
+
+ctrl_average_graph3 <-
+  ctrl_average %>% 
+  filter(sample == "SKMEL2_wt_ctrl_vs_JAK1C8_ctrl_average") %>%
+  mutate(legend = ifelse(legend == "KO confers resistance", "JAK1 KO more sensitive", ifelse(legend == "KO confers sensitisation", "JAK1 KO more resistant", legend)))
+
+plot1 <- ggplot(subset(ctrl_average_graph, sample == "SKMEL2_wt_ctrl_vs_JAK2C4_ctrl_average"), aes(x=neg.lfc, y= neg_log_10_p, colour = legend, size = fdr)) +
+geom_point(shape = 1) +
+geom_text_repel(aes(label=ifelse(legend !="not significant" & gene %in% c("U2AF1", "CARS1", "VPS28", "MTREX") | neg.lfc > 2.5 & neg_log_10_p >4 , gene, "")), size=3, max.overlaps = Inf, colour = "black") +
+theme_classic() +
+scale_colour_manual(values=c("red", "grey70", "blue"), na.value="grey80") +
+  scale_size(transform = "reverse", range = c(0.1,3.5) ) +
+     labs(color = "", size = "FDR") +
+labs(title= "") + xlab("Log2 fold change") + ylab("-Log10 (P-value)")
+plot1
+
+plot2 <- ggplot(subset(IFNb_average_graph, sample == "SKMEL2_wt_IFNb_vs_JAK2C4_IFNb_average"), aes(x=neg.lfc, y= neg_log_10_p, colour = legend, size = fdr)) +
+geom_point(shape = 1) +
+geom_text_repel(aes(label=ifelse(legend !="not significant" & gene %in% c("U2AF1", "CARS1", "VPS28", "MTREX")| neg.lfc > 3 & neg_log_10_p >4 , gene, "")), size=3, max.overlaps = Inf, colour = "black") +
+theme_classic() +
+scale_colour_manual(values=c("red", "grey70", "blue"), na.value="grey80") +
+  scale_size(transform = "reverse", range = c(0.1,3.5) ) +
+       labs(color = "", size = "FDR") +
+labs(title= "") + xlab("Log2 fold change") + ylab("-Log10 (P-value)")
+plot2
+
+ggsave(plot = plot2, "SKMEL2_JAK2KO_beta_volcano.eps", width = 7.5, height = 4.5, path ="/Users/mc32/Documents/Matt_Coelho/Bioinformatics/Minlib_SL_JAK1_JAK2_Cas9_Watterson/figures_export")
+
+plot3 <- ggplot(subset(ctrl_average_graph2, sample == "SKMEL2_wt_ctrl_vs_JAK1B8_ctrl_average"), aes(x=neg.lfc, y= neg_log_10_p, colour = legend, size = fdr)) +
+geom_point(shape = 1) +
+geom_text_repel(aes(label=ifelse(legend !="not significant" & gene %in% c("U2AF1", "CARS1", "VPS28", "MTREX")| neg.lfc > 3 & neg_log_10_p >4 , gene, "")), size=3, max.overlaps = Inf, colour = "black") +
+theme_classic() +
+scale_colour_manual(values=c("red", "blue", "grey70"), na.value="grey80") +
+  scale_size(transform = "reverse", range = c(0.1,3.5) ) +
+       labs(color = "", size = "FDR") +
+labs(title= "") + xlab("Log2 fold change") + ylab("-Log10 (P-value)")
+plot3
+
+plot4 <- ggplot(subset(ctrl_average_graph3, sample == "SKMEL2_wt_ctrl_vs_JAK1C8_ctrl_average"), aes(x=neg.lfc, y= neg_log_10_p, colour = legend, size = fdr)) +
+geom_point(shape = 1) +
+geom_text_repel(aes(label=ifelse(legend !="not significant" & gene %in% c("U2AF1", "CARS1", "VPS28", "MTREX")| neg.lfc > 2.5 & neg_log_10_p >4 , gene, "")), size=3, max.overlaps = Inf, colour = "black") +
+theme_classic() +
+scale_colour_manual(values=c("blue", "red", "grey70"), na.value="grey80") +
+  scale_size(transform = "reverse", range = c(0.1,3.5) ) +
+       labs(color = "", size = "FDR") +
+labs(title= "") + xlab("Log2 fold change") + ylab("-Log10 (P-value)")
+plot4
+
+plot5 <- ggplot(subset(IFNb_average, sample == "SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average"), aes(x=neg.lfc, y= neg_log_10_p, colour = legend, size = fdr)) +
+geom_point(shape = 1) +
+geom_text_repel(aes(label=ifelse(neg.lfc > 2.7 & neg_log_10_p > 4 & fdr < 0.1|  neg.lfc < -2.7 & neg_log_10_p > 4 & fdr <0.1, gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "black") +
+theme_classic() +
+scale_colour_manual(values=c("red", "blue", "grey70"), na.value="grey80") +
+    scale_size(transform = "reverse", range = c(0.1,3.5) ) +
+       labs(color = "", size = "FDR") +
+labs() + xlab("Log2 fold change") + ylab("-Log10 (P-value)")
+plot5
+
+ggsave(plot = plot5, "SKMEL2_JAK1KO_beta_volcano.eps", width = 7.5, height = 4.5, path ="/Users/mc32/Documents/Matt_Coelho/Bioinformatics/Minlib_SL_JAK1_JAK2_Cas9_Watterson/figures_export")
+
+plot6 <- ggplot(subset(IFNb_average, sample == "SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average"), aes(x=neg.lfc, y= neg_log_10_p, colour = legend, size = fdr)) +
+geom_point(shape = 1) +
+geom_text_repel(aes(label=ifelse(neg.lfc > 2.3 & neg_log_10_p > 4.5 |  neg.lfc < -2.3 & neg_log_10_p > 4.5, gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "black") +
+theme_classic() +
+scale_colour_manual(values=c("red", "blue", "grey70"), na.value="grey80") +
+    scale_size(transform = "reverse", range = c(0.1,3.5) ) +
+       labs(color = "", size = "FDR") +
+labs() + xlab("Log2 fold change") + ylab("-Log10 (P-value)")
+plot6
+```
+
+```{r}
+
+plot1 <- ggplot(subset(ctrl_average, sample == "SKMEL2_wt_ctrl_vs_JAK2C4_ctrl_average"), aes(x=neg.rank, y= neg.lfc, size = fdr, alpha = neg_log_10_p)) +
+geom_point(shape =1) +
+geom_text_repel(aes(label=ifelse(legend !="not significant" & gene %in% c("U2AF1", "CARS1", "VPS28", "MTREX", "LIG1"), gene, "")), size=3, max.overlaps = Inf, colour = "red") +
+theme_classic() +
+   scale_alpha_continuous(range = c(0.2,1)) +
+    scale_size(transform = "reverse", range = c(0.1,3) ) +
+labs(title= "") + xlab("gene rank") + ylab("L2FC")
+plot1
+
+plot2 <- ggplot(subset(IFNb_average, sample == "SKMEL2_wt_IFNb_vs_JAK2C4_IFNb_average"), aes(x=neg.rank, y= neg.lfc, size = fdr, alpha = neg_log_10_p)) +
+geom_point(shape =1) +
+geom_text_repel(aes(label=ifelse(legend !="not significant" & gene %in% c("U2AF1", "CARS1", "VPS28", "MTREX", "LIG1"), gene, "")), size=3, max.overlaps = Inf, colour = "red") +
+theme_classic() +
+   scale_alpha_continuous(range = c(0.2,1)) +
+    scale_size(transform = "reverse", range = c(0.1,3) ) +
+labs(title= "") + xlab("gene rank") + ylab("L2FC")
+plot2
+
+
+plot3 <- ggplot(subset(IFNb_average, sample == "SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average"), aes(x=neg.rank, y= neg.lfc, size = fdr, alpha = neg_log_10_p)) +
+geom_point(shape =1) +
+geom_text_repel(aes(label=ifelse(legend !="not significant" & gene %in% c("U2AF1", "CARS1", "VPS28", "MTREX", "LIG1"), gene, "")), size=3, max.overlaps = Inf, colour = "red") +
+theme_classic() +
+   scale_alpha_continuous(range = c(0.2,1)) +
+    scale_size(transform = "reverse", range = c(0.1,3) ) +
+labs(title= "") + xlab("gene rank") + ylab("L2FC")
+plot3
+```
+
+```{r}
+#plot JAK1 vs JAK2 for IFNb_average and plot IFNg vs IFNb for  SKMEL2
+
+SKMEL_BETA_JAK1c1 <-
+  IFNb_average %>%
+  filter(sample == "SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average") %>%
+  dplyr::rename(SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average = neg.lfc) %>%
+  select(SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average, gene)
+
+SKMEL_BETA_JAK1c2 <-
+  IFNb_average %>%
+  filter(sample == "SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average") %>%
+  dplyr::rename(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average = neg.lfc) %>%
+  dplyr::rename(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_fdr = fdr) %>%
+    dplyr::rename(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_neg_log_10_p = neg_log_10_p) %>%
+  select(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average, SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_fdr, SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_neg_log_10_p, gene)
+
+SKMEL_GAMMA_JAK1c1 <- 
+  IFNg_average %>%
+  filter(sample == "SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average") %>% 
+  dplyr::rename(SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average = neg.lfc) %>%
+  select(SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average, gene)
+
+SKMEL_GAMMA_JAK1c2 <- 
+  IFNg_average %>%
+  filter(sample == "SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average") %>% 
+  dplyr::rename(SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average = neg.lfc) %>%
+  dplyr::rename(SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_fdr = fdr) %>%
+    dplyr::rename(SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_neg_log_10_p = neg_log_10_p) %>%
+  select(SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average, SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_fdr, SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_neg_log_10_p, gene)
+
+BETA <- left_join(SKMEL_BETA_JAK1c1, SKMEL_BETA_JAK1c2)
+BETA <- left_join(BETA, SKMEL_GAMMA_JAK1c1)
+BETA <- left_join(BETA, SKMEL_GAMMA_JAK1c2)
+```
+
+```{r}
+BETA
+
+BETA <- 
+  BETA %>%
+  mutate(fdr = ifelse(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_fdr < SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_fdr, SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_fdr, SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_fdr)) %>%
+  mutate(neg_log_10_p = ifelse(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_neg_log_10_p < SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_neg_log_10_p, SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_neg_log_10_p, SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_neg_log_10_p))
+```
+
+```{r}
+# IFNb - scatter plots
+pos = position_jitter(width = 0.2, height = 0.2, seed = 2)
+
+plot1 <- ggplot(BETA, aes(x=SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average, y= SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average, size = fdr, colour = neg_log_10_p)) +
+geom_pointdensity(position = pos, shape = 16) +
+geom_text_repel(aes(label=ifelse(gene %in% c("PTPN2", "JAK1", "JAK2", "ADAR", "IFNGR1", "IFNGR2", "IFNAR1", "IFNAR2", "IRF9", "STAT2", "TYK2", "RARS1" ,"HARS1", "STRAP", "ENY2", "EIF4G2", "TSC1", "VPS25", "STAT1", "CHMP3", "CHMP5", "TSC2", "ISG15", "IRF1", "SEC62", "VPS18", "UBE2S", "ELOB"), gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "black") +
+theme_classic(base_size = 12) +
+labs(title= "") +  xlab(expression(IFN*beta ~ "log2 fold-change")) + ylab(expression(IFN*gamma ~ "log2 fold-change")) +
+geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_colour_viridis_c(transform = "reverse", option = "magma") +
+  scale_size(transform = "reverse", range = c(0.1,3) ) +
+   labs(color = "-log10 p-value", size = "FDR") +
+geom_hline(yintercept = 0, linetype = "dotted")
+plot1
+
+ggsave(plot = plot1, "beta_vs_gamma_HT29.eps", width = 7, height = 5, path ="/Users/mc32/Documents/Matt_Coelho/Bioinformatics/Minlib_SL_JAK1_JAK2_Cas9_Watterson/figures_export")
+```
+
+```{r}
+# find genes shared and private to Beta and Gamma in SKMEL2
+#shared res
+BETA %>%
+  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average >2 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average >2)
+#private res beta
+BETA %>%
+  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average >3 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average <2)
+#private res gamma
+BETA %>%
+  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average <1 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average >2)
+
+#shared sens
+BETA %>%
+  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average < -2 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average < -2)
+#private sens beta
+BETA %>%
+  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average < -2 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average > -2)
+#private sens gamma
+BETA %>%
+  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average > -1 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average < -3)
+```
+
+```{r}
+#shared res hits
+
+BETA %>%
+  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average > 2 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average > 2) %>%
+  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_neg_log_10_p > 1.301029996 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_neg_log_10_p > 1.301029996) %>%
+  filter(fdr < 0.1)
+
+#shared sens hits
+
+BETA %>%
+  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average < -2 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average < -2) %>%
+  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_neg_log_10_p > 1.301029996 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_neg_log_10_p > 1.301029996) %>%
+  filter(fdr < 0.1)
+
+#private res hits
+
+BETA %>%
+  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average > 2 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average < 1) %>%
+  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_neg_log_10_p > 1.301029996 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_neg_log_10_p < 1.301029996) %>%
+  filter(fdr < 0.1)
+
+BETA %>%
+  filter(SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average > 2 & SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average < 1) %>%
+  filter(SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average > 1.301029996 & SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average < 1.301029996) %>%
+  filter(fdr < 0.1)
+
+#private sens hits
+
+BETA %>%
+  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average < -2 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average > -1) %>%
+  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_neg_log_10_p > 1.301029996 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_neg_log_10_p < 1.301029996) 
+
+BETA %>%
+  filter(SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average < -2 & SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average > -1) %>%
+  filter(SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_neg_log_10_p > 1.301029996 & SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_neg_log_10_p < 1.301029996) 
+
+```
+
+```{r}
+
+HT29_GAMMA <- 
+  HT29_wt_IFNg_vs_ctrl_average %>% 
+  dplyr::rename(gene = id) %>%
+   mutate(pvalue = ifelse(neg.lfc< 0, neg.p.value, pos.p.value)) %>%
+ mutate(fdr = ifelse(neg.lfc< 0, neg.fdr, pos.fdr)) %>%
+ mutate(neg_log_10_p = (-1*log10(pvalue))) %>%
+    dplyr::rename(HT29_wt_IFNg_vs_ctrl_average_fdr = fdr) %>%
+    dplyr::rename(HT29_wt_IFNg_vs_ctrl_average_neg_log_10_p = neg_log_10_p) %>%
+    dplyr::rename(HT29_wt_IFNg_vs_ctrl_average_lfc = neg.lfc) %>%
+  select(gene, HT29_wt_IFNg_vs_ctrl_average_lfc, HT29_wt_IFNg_vs_ctrl_average_neg_log_10_p, HT29_wt_IFNg_vs_ctrl_average_fdr)
+
+A375_GAMMA <- 
+  A375_wt_IFNg_vs_ctrl_average %>% 
+  dplyr::rename(gene = id) %>%
+   mutate(pvalue = ifelse(neg.lfc< 0, neg.p.value, pos.p.value)) %>%
+ mutate(fdr = ifelse(neg.lfc< 0, neg.fdr, pos.fdr)) %>%
+ mutate(neg_log_10_p = (-1*log10(pvalue))) %>%
+    dplyr::rename(A375_wt_IFNg_vs_ctrl_average_fdr = fdr) %>%
+    dplyr::rename(A375_wt_IFNg_vs_ctrl_average_neg_log_10_p = neg_log_10_p) %>%
+    dplyr::rename(A375_wt_IFNg_vs_ctrl_average_lfc = neg.lfc) %>%
+  select(gene, A375_wt_IFNg_vs_ctrl_average_lfc, A375_wt_IFNg_vs_ctrl_average_neg_log_10_p, A375_wt_IFNg_vs_ctrl_average_fdr)
+
+SKMEL2_GAMMA <- 
+  SKMEL2_wt_IFNg_vs_ctrl_average %>% 
+  dplyr::rename(gene = id) %>%
+   mutate(pvalue = ifelse(neg.lfc< 0, neg.p.value, pos.p.value)) %>%
+ mutate(fdr = ifelse(neg.lfc< 0, neg.fdr, pos.fdr)) %>%
+ mutate(neg_log_10_p = (-1*log10(pvalue))) %>%
+    dplyr::rename(SKMEL2_wt_IFNg_vs_ctrl_average_fdr = fdr) %>%
+    dplyr::rename(SKMEL2_wt_IFNg_vs_ctrl_average_neg_log_10_p = neg_log_10_p) %>%
+    dplyr::rename(SKMEL2_wt_IFNg_vs_ctrl_average_lfc = neg.lfc) %>%
+  select(gene, SKMEL2_wt_IFNg_vs_ctrl_average_lfc, SKMEL2_wt_IFNg_vs_ctrl_average_neg_log_10_p, SKMEL2_wt_IFNg_vs_ctrl_average_fdr)
+
+GAMMA <- left_join(HT29_GAMMA, A375_GAMMA)
+GAMMA <- left_join(GAMMA, SKMEL2_GAMMA)
+GAMMA
+```
+
+```{r}
+#plots
+
+plot1 <- ggplot(GAMMA, aes(x=HT29_wt_IFNg_vs_ctrl_average_lfc, y= A375_wt_IFNg_vs_ctrl_average_lfc, size = HT29_wt_IFNg_vs_ctrl_average_fdr, colour = HT29_wt_IFNg_vs_ctrl_average_neg_log_10_p)) +
+geom_pointdensity(shape = 16) +
+#geom_text_repel(aes(label=ifelse(gene %in% c("MAP3K7", "CHD1", "PTPN2", "JAK1", "JAK2", "ADAR", "IFNGR1", "IFNGR2", "IFNAR1", "IFNAR2", "IRF9", "STAT2", "TYK2", "RARS1" ,"HARS1", "STRAP", "ENY2", "EIF4G2", "TSC1", "VPS25", "STAT1", "CHMP3", "CHMP5", "TSC2", "ISG15", "IRF1", "SEC62", "VPS18", "UBE2S", "ELOB"), gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "black") +
+geom_text_repel(aes(label=ifelse(HT29_wt_IFNg_vs_ctrl_average_lfc > 1.7 & A375_wt_IFNg_vs_ctrl_average_lfc >1.7 | HT29_wt_IFNg_vs_ctrl_average_lfc < -1.1 & A375_wt_IFNg_vs_ctrl_average_lfc < -1.1 | gene %in% c("CHD1", "MAP3K7"), gene, "")), size=3, max.overlaps = Inf, colour = "black") +
+theme_classic(base_size = 12) +
+geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_colour_viridis_c(transform = "reverse", option = "magma") +
+  scale_size(transform = "reverse", range = c(0.1,3) ) +
+   labs(color = "-log10 p-value", size = "FDR") +
+geom_hline(yintercept = 0, linetype = "dotted") +
+labs(title= "") +  xlab(expression(IFN*-gamma ~ "HT-29 log2 fold-change")) + ylab(expression(IFN*-gamma ~ "A375 log2 fold-change"))
+plot1
+
+ggsave(plot = plot1, "HT29_vs_A375.eps", width = 7, height = 5, path ="/Users/mc32/Documents/Matt_Coelho/Bioinformatics/Minlib_SL_JAK1_JAK2_Cas9_Watterson/figures_export")
+
+plot2 <- ggplot(GAMMA, aes(x=SKMEL2_wt_IFNg_vs_ctrl_average_lfc, y= A375_wt_IFNg_vs_ctrl_average_lfc, size = A375_wt_IFNg_vs_ctrl_average_fdr, colour = SKMEL2_wt_IFNg_vs_ctrl_average_neg_log_10_p)) +
+geom_pointdensity(shape = 16) +
+#geom_text_repel(aes(label=ifelse(gene %in% c("MAP3K7", "CHD1", "PTPN2", "JAK1", "JAK2", "ADAR", "IFNGR1", "IFNGR2", "IFNAR1", "IFNAR2", "IRF9", "STAT2", "TYK2", "RARS1" ,"HARS1", "STRAP", "ENY2", "EIF4G2", "TSC1", "VPS25", "STAT1", "CHMP3", "CHMP5", "TSC2", "ISG15", "IRF1", "SEC62", "VPS18", "UBE2S", "ELOB"), gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "black") +
+geom_text_repel(aes(label=ifelse(SKMEL2_wt_IFNg_vs_ctrl_average_lfc > 1.5 & A375_wt_IFNg_vs_ctrl_average_lfc >1.5 | SKMEL2_wt_IFNg_vs_ctrl_average_lfc < -1.5 & A375_wt_IFNg_vs_ctrl_average_lfc < -1.5 | gene %in% c("CHD1", "MAP3K7"), gene, "")), size=3, max.overlaps = Inf, colour = "black") +
+theme_classic(base_size = 12) +
+geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_colour_viridis_c(transform = "reverse", option = "magma") +
+  scale_size(transform = "reverse", range = c(0.1,3) ) +
+   labs(color = "-log10 p-value", size = "FDR") +
+geom_hline(yintercept = 0, linetype = "dotted") +
+labs(title= "") +  xlab(expression(IFN*-gamma ~ "SK-MEL-2 log2 fold-change")) + ylab(expression(IFN*-gamma ~ "A375 log2 fold-change"))
+plot2
+
+ggsave(plot = plot2, "SKMEL2_vs_A375.eps", width = 7, height = 5, path ="/Users/mc32/Documents/Matt_Coelho/Bioinformatics/Minlib_SL_JAK1_JAK2_Cas9_Watterson/figures_export")
+
+plot3 <- ggplot(GAMMA, aes(x=HT29_wt_IFNg_vs_ctrl_average_lfc, y= SKMEL2_wt_IFNg_vs_ctrl_average_lfc, size = HT29_wt_IFNg_vs_ctrl_average_fdr, colour = HT29_wt_IFNg_vs_ctrl_average_neg_log_10_p)) +
+geom_pointdensity(shape = 16) +
+#geom_text_repel(aes(label=ifelse(gene %in% c("MAP3K7", "CHD1", "PTPN2", "JAK1", "JAK2", "ADAR", "IFNGR1", "IFNGR2", "IFNAR1", "IFNAR2", "IRF9", "STAT2", "TYK2", "RARS1" ,"HARS1", "STRAP", "ENY2", "EIF4G2", "TSC1", "VPS25", "STAT1", "CHMP3", "CHMP5", "TSC2", "ISG15", "IRF1", "SEC62", "VPS18", "UBE2S", "ELOB"), gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "black") +
+geom_text_repel(aes(label=ifelse(HT29_wt_IFNg_vs_ctrl_average_lfc > 1.9 & SKMEL2_wt_IFNg_vs_ctrl_average_lfc >1.9 | HT29_wt_IFNg_vs_ctrl_average_lfc < -2.2 & SKMEL2_wt_IFNg_vs_ctrl_average_lfc < -2.2 | gene %in% c("CHD1", "MAP3K7"), gene, "")), size=3, max.overlaps = Inf, colour = "black") +
+theme_classic(base_size = 12) +
+geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_colour_viridis_c(transform = "reverse", option = "magma") +
+  scale_size(transform = "reverse", range = c(0.1,3) ) +
+   labs(color = "-log10 p-value", size = "FDR") +
+geom_hline(yintercept = 0, linetype = "dotted") +
+  labs(title= "") +  xlab(expression(IFN*-gamma ~ "HT-29 log2 fold-change")) + ylab(expression(IFN*-gamma ~ "SK-MEL-2 log2 fold-change"))
+plot3
+
+ggsave(plot = plot3, "HT29_vs_SKMEL2.eps", width = 7, height = 5, path ="/Users/mc32/Documents/Matt_Coelho/Bioinformatics/Minlib_SL_JAK1_JAK2_Cas9_Watterson/figures_export")
+
+plot4 <- ggplot(GAMMA, aes(x=SKMEL2_wt_IFNg_vs_ctrl_average_lfc, y= A375_wt_IFNg_vs_ctrl_average_lfc, size = SKMEL2_wt_IFNg_vs_ctrl_average_fdr, colour = SKMEL2_wt_IFNg_vs_ctrl_average_neg_log_10_p)) +
+geom_pointdensity(shape = 16) +
+#geom_text_repel(aes(label=ifelse(gene %in% c("MAP3K7", "CHD1", "PTPN2", "JAK1", "JAK2", "ADAR", "IFNGR1", "IFNGR2", "IFNAR1", "IFNAR2", "IRF9", "STAT2", "TYK2", "RARS1" ,"HARS1", "STRAP", "ENY2", "EIF4G2", "TSC1", "VPS25", "STAT1", "CHMP3", "CHMP5", "TSC2", "ISG15", "IRF1", "SEC62", "VPS18", "UBE2S", "ELOB"), gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "black") +
+geom_text_repel(aes(label=ifelse(SKMEL2_wt_IFNg_vs_ctrl_average_lfc > 1.5 & A375_wt_IFNg_vs_ctrl_average_lfc >1.5 | SKMEL2_wt_IFNg_vs_ctrl_average_lfc < -1.5 & A375_wt_IFNg_vs_ctrl_average_lfc < -1.5 | gene %in% c("CHD1", "MAP3K7"), gene, "")), size=3, max.overlaps = Inf, colour = "black") +
+theme_classic(base_size = 12) +
+labs(title= "") +  xlab("SKMEL2_wt_IFNg_vs_ctrl_average") + ylab("A375_wt_IFNg_vs_ctrl_average") +
+geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_colour_viridis_c(transform = "reverse", option = "magma") +
+  scale_size(transform = "reverse", range = c(0.1,3) ) +
+   labs(color = "-log10 p-value", size = "FDR") +
+geom_hline(yintercept = 0, linetype = "dotted")
+plot4
+```
+
+```{r}
+#shared hits
+
+#A375 and HT29
+#res
+GAMMA %>%
+  filter(HT29_wt_IFNg_vs_ctrl_average_lfc > 1 & HT29_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
+  filter(A375_wt_IFNg_vs_ctrl_average_lfc > 1 & A375_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+#sens
+GAMMA %>%
+  filter(HT29_wt_IFNg_vs_ctrl_average_lfc < -1 & HT29_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
+  filter(A375_wt_IFNg_vs_ctrl_average_lfc < -1 & A375_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+
+A375_HT29_res <-
+  GAMMA %>%
+  filter(HT29_wt_IFNg_vs_ctrl_average_lfc > 1 & HT29_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
+  filter(A375_wt_IFNg_vs_ctrl_average_lfc > 1 & A375_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+
+A375_HT29_sens <-
+  GAMMA %>%
+  filter(HT29_wt_IFNg_vs_ctrl_average_lfc < -1 & HT29_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
+  filter(A375_wt_IFNg_vs_ctrl_average_lfc < -1 & A375_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+
+```
+
+```{r}
+#A375 and SKMEL2
+#res
+GAMMA %>%
+  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc > 1 & SKMEL2_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
+  filter(A375_wt_IFNg_vs_ctrl_average_lfc > 1 & A375_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+#sens
+GAMMA %>%
+  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc < -1 & SKMEL2_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
+  filter(A375_wt_IFNg_vs_ctrl_average_lfc < -1 & A375_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+
+A375_SKMEL2_res <- 
+GAMMA %>%
+  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc > 1 & SKMEL2_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
+  filter(A375_wt_IFNg_vs_ctrl_average_lfc > 1 & A375_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+
+A375_SKMEL2_sens <- 
+GAMMA %>%
+  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc < -1 & SKMEL2_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
+  filter(A375_wt_IFNg_vs_ctrl_average_lfc < -1 & A375_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+```
+
+```{r}
+#HT29 and SKMEL2
+#res
+GAMMA %>%
+  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc > 1 & SKMEL2_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
+  filter(HT29_wt_IFNg_vs_ctrl_average_lfc > 1 & HT29_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+
+#sens
+GAMMA %>%
+  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc < -1 & SKMEL2_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
+  filter(HT29_wt_IFNg_vs_ctrl_average_lfc < -1 & HT29_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+
+HT29_SKMEL2_res <-
+GAMMA %>%
+  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc > 1 & SKMEL2_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
+  filter(HT29_wt_IFNg_vs_ctrl_average_lfc > 1 & HT29_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+
+HT29_SKMEL2_sens <-
+GAMMA %>%
+  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc < -1 & SKMEL2_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
+  filter(HT29_wt_IFNg_vs_ctrl_average_lfc < -1 & HT29_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+```
+
+```{r}
+#A375 and HT29 and SKMEL2
+#res
+GAMMA %>%
+  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc > 1 & SKMEL2_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
+  filter(HT29_wt_IFNg_vs_ctrl_average_lfc > 1 & HT29_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
+  filter(A375_wt_IFNg_vs_ctrl_average_lfc > 1 & A375_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+
+#sens
+GAMMA %>%
+  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc < -1 & SKMEL2_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
+  filter(HT29_wt_IFNg_vs_ctrl_average_lfc < -1 & HT29_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
+  filter(A375_wt_IFNg_vs_ctrl_average_lfc < -1 & A375_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+
+A375_SKMEL2_HT29_res <-
+GAMMA %>%
+  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc > 1 & SKMEL2_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
+  filter(HT29_wt_IFNg_vs_ctrl_average_lfc > 1 & HT29_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
+  filter(A375_wt_IFNg_vs_ctrl_average_lfc > 1 & A375_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+
+A375_SKMEL2_HT29_sens <-
+GAMMA %>%
+  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc < -1 & SKMEL2_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
+  filter(HT29_wt_IFNg_vs_ctrl_average_lfc < -1 & HT29_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
+  filter(A375_wt_IFNg_vs_ctrl_average_lfc < -1 & A375_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+```
+
+
+```{r}
+#Venn Diagram - cell line resistance to IFNg
+A375_HT29_res
+A375_SKMEL2_res
+HT29_SKMEL2_res
+
+A375_SKMEL2_HT29_res
+
+semi_join(A375_SKMEL2_res, A375_HT29_res)
+semi_join(HT29_SKMEL2_res, A375_HT29_res)
+
+semi_join(A375_SKMEL2_res, A375_SKMEL2_HT29_res)
+
+#Venn Diagram - cell line sensitivity to IFNg
+
+A375_HT29_sens
+A375_SKMEL2_sens
+HT29_SKMEL2_sens
+
+A375_SKMEL2_HT29_sens
+
+```
+
+```{r}
+# PCA plots of the responses to gamma (A375 is vastly different)
+
+HT29_GAMMA <-
+  HT29_GAMMA %>% 
+  mutate(cell_line = "HT29") %>%
+  select(HT29_wt_IFNg_vs_ctrl_average_lfc, gene, cell_line)
+
+A375_GAMMA <-
+  A375_GAMMA %>% 
+    mutate(cell_line = "A375") %>%
+  select(A375_wt_IFNg_vs_ctrl_average_lfc, gene, cell_line)
+
+SKMEL2_GAMMA <-
+  SKMEL2_GAMMA %>% 
+    mutate(cell_line = "SKMEL2") %>%
+  select(SKMEL2_wt_IFNg_vs_ctrl_average_lfc, gene, cell_line)
+
+GAMMA_PCA <- left_join(HT29_GAMMA, A375_GAMMA)
+GAMMA_PCA <- left_join(GAMMA_PCA, SKMEL2_GAMMA)
+
+GAMMA
+
+GAMMA_numeric <- 
+  GAMMA_PCA %>%
+  select(A375_wt_IFNg_vs_ctrl_average_lfc, SKMEL2_wt_IFNg_vs_ctrl_average_lfc, HT29_wt_IFNg_vs_ctrl_average_lfc)
+
+GAMMA_PCA<-
+  GAMMA_numeric %>% filter(is.na(A375_wt_IFNg_vs_ctrl_average_lfc) == FALSE & is.na(HT29_wt_IFNg_vs_ctrl_average_lfc) == FALSE & is.na(SKMEL2_wt_IFNg_vs_ctrl_average_lfc) == FALSE)
+
+
+# Perform PCA manually
+#pca_results <- prcomp(GAMMA_numeric, scale. = TRUE)
+
+# Plot PCA with cell_type as the color grouping
+#autoplot(pca_results, data = GAMMA_PCA)
+```
+
+```{r}
+#cbioportal data - prostate RNA seq
+#analyse MAP3K7 vs CHD1
+#analyse CHD1 vs MAP3K7
+#analyse the top IFNg genes assocaited with their expression
+
+MAP3K7_RNAseq <- as_tibble(read.delim("MAP3K7_RNA_cbioportal.tsv", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+CHD1_RNAseq <- as_tibble(read.delim("CHD1_RNA_cbioportal.tsv", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+RNAseq_prostate <- as_tibble(read.delim("coexpression.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+
+MAP3K7_RNAseq
+CHD1_RNAseq
+
+RNAseq_prostate <-
+RNAseq_prostate %>%
+  mutate(log2_MAP3K7 = log2(CHD1..mRNA.expression..RNA.Seq.RPKM..)) %>%
+    mutate(log2_CHD1 = log2(MAP3K7..mRNA.expression..RNA.Seq.RPKM..))
+RNAseq_prostate
+```
+
+```{r}
+#plot correlation MAP3K7 and CHD1 log2
+plot1 <- ggplot(RNAseq_prostate, aes(x=log2_CHD1, y= log2_MAP3K7)) +
+geom_point(shape = 1, colour = "black", size = 2) +
+labs(title= "Prostate tumor sample RNA-seq.") +  xlab("log2 CHD1 RPKM") + ylab("log2 MAP3K7 RPKM") +
+  theme_classic() +
+  geom_smooth(method = "lm", colour = "salmon")
+plot1
+```
+
+```{r}
+
+MAP3K7_RNAseq <- MAP3K7_RNAseq %>% mutate(rank = rank(q.Value))
+CHD1_RNAseq <- CHD1_RNAseq %>% mutate(rank = rank(q.Value))
+MAP3K7_RNAseq
+
+#plot correlation MAP3K7 and CHD1 log2
+plot1 <- ggplot(MAP3K7_RNAseq, aes(x=rank, y= q.Value, colour = Spearman.s.Correlation)) +
+geom_point(shape = 16, size = 1.5) +
+labs(title= "MAP3K7 RNA co-expression") +  xlab("Transcript rank") + ylab("q-value") +
+    scale_colour_viridis_c(transform = "reverse") +
+  geom_text_repel(aes(label=ifelse(Correlated.Gene %in% c("JAK2", "CHD1"), paste(Correlated.Gene, rank), "")), size=3, max.overlaps = Inf) +
+         labs(color = "Spearmans correlation") +
+  theme_classic()
+plot1
+
+plot2 <- ggplot(CHD1_RNAseq, aes(x=rank, y= q.Value, colour = Spearman.s.Correlation)) +
+geom_point(shape = 16, size = 1.5) +
+labs(title= "CHD1 RNA co-expression") +  xlab("Transcript rank") + ylab("q-value") +
+    scale_colour_viridis_c(transform = "reverse") +
+  geom_text_repel(aes(label=ifelse(Correlated.Gene %in% c("JAK2", "MAP3K7"), paste(Correlated.Gene, rank), "")), size=3, max.overlaps = Inf) +
+           labs(color = "Spearmans correlation") +
+  theme_classic()
+plot2
+```
+
+```{r}
+# gRNA perfromance
+# replicate correlation
+# common hits between WT and the KOs 
+```
+
+```{r}
+# read in results from MAGeCK analysis sgRNA
+
+#HT29 
+# sgRNA level
+# IFNg average
+# WT
+HT29_wt_IFNg_vs_ctrl_average_gRNA <- as_tibble(read.delim("HT29_exp1_2_JAK1_2937_3032/MAGECK_AVERAGE/WT_IFNg_D14_vs_WT_CTRL_D14.sgRNA_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK1
+HT29_wt_IFNg_vs_JAK1c1_IFNg_average_gRNA <- as_tibble(read.delim("HT29_exp1_2_JAK1_2937_3032/MAGECK_AVERAGE/WT_IFNg_D14_vs_JAK1_KO_C1_IFNg_D14.sgRNA_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+HT29_wt_IFNg_vs_JAK1c3_IFNg_average_gRNA <- as_tibble(read.delim("HT29_exp1_2_JAK1_2937_3032/MAGECK_AVERAGE/WT_IFNg_D14_vs_JAK1_KO_C3_IFNg_D14.sgRNA_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+HT29_JAK1c3_IFNg_vs_JAK1c1_IFNg_average_gRNA <- as_tibble(read.delim("HT29_exp1_2_JAK1_2937_3032/MAGECK_AVERAGE/JAK1_KO_C3_IFNg_D14_vs_JAK1_KO_C1_IFNg_D14.sgRNA_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK2
+HT29_wt_IFNg_vs_JAK2A11_IFNg_average_gRNA <- as_tibble(read.delim("HT29_exp1_2_JAK2_3067/MAGECK_AVERAGE/WT_IFNg_vs_A11_IFNg.sgRNA_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+HT29_wt_IFNg_vs_JAK2F4_IFNg_average_gRNA <- as_tibble(read.delim("HT29_exp1_2_JAK2_3067/MAGECK_AVERAGE/WT_IFNg_vs_F4_IFNg.sgRNA_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+HT29_JAK2F4_IFNg_vs_JAK2A11_IFNg_average_gRNA <- as_tibble(read.delim("HT29_exp1_2_JAK2_3067/MAGECK_AVERAGE/F4_IFNg_vs_A11_IFNg.sgRNA_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+```
+
+```{r}
+# read in results from MAGeCK analysis sgRNA
+
+#A375 
+# sgRNA level
+# IFNg average
+#JAK1
+A375_wt_IFNg_vs_ctrl_average_gRNA <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_AVERAGE/WT_IFNg_D14_vs_WT_CTRL_D14.sgRNA_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+A375_wt_IFNg_vs_JAK1B10_IFNg_average_gRNA <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_AVERAGE/WT_IFNg_D14_vs_JAK1_B10_IFNg_D14.sgRNA_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+A375_wt_IFNg_vs_JAK1E8_IFNg_average_gRNA <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_AVERAGE/WT_IFNg_D14_vs_JAK1_E8_IFNg_D14.sgRNA_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+A375_JAK1B10_IFNg_vs_JAK1E8_IFNg_average_gRNA <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_AVERAGE/JAK1_B10_IFNg_D14_vs_JAK1_E8_IFNg_D14.sgRNA_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK2
+A375_wt_IFNg_vs_JAK2D9_IFNg_average_gRNA <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_AVERAGE/WT_IFNg_D14_vs_JAK2_D9_IFNg_D14.sgRNA_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+A375_wt_IFNg_vs_JAK2D10_IFNg_average_gRNA <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_AVERAGE/WT_IFNg_D14_vs_JAK2_D10_IFNg_D14.sgRNA_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+A375_JAK2D10_IFNg_vs_JAK2D9_IFNg_average_gRNA <- as_tibble(read.delim("A375_exp1_2_2977_3038/MAGECK_AVERAGE/JAK2_D10_IFNg_D14_vs_JAK2_D9_IFNg_D14.sgRNA_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+```
+
+```{r}
+#A375 
+# sgRNA level
+# IFNg average
+# read in results from MAGeCK analysis sgRNA
+
+SKMEL2_wt_IFNg_vs_ctrl_average_gRNA <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/WT_IFNg_vs_WT_CTRL.sgRNA_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK1
+SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_gRNA <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/WT_IFNg_vs_JAK1_C8_IFNg.sgRNA_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_gRNA <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/WT_IFNg_vs_JAK1_B8_IFNg.sgRNA_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+#JAK2
+SKMEL2_JAK2C4_IFNg_vs_JAK2D5_IFNg_average_gRNA <- as_tibble(read.delim("SKMEL2_exp1_2_3141_3149/MAGECK_AVERAGE/JAK2_C4_IFNg_vs_JAK2_D5_IFNg.sgRNA_summary.txt", stringsAsFactors = FALSE, header = TRUE, sep ="\t"))
+```
+
+```{r}
+# bind all average dataframes together
+# IFNg
+IFNg_average_gRNA <-
+  bind_rows(
+  lst(
+    HT29_wt_IFNg_vs_ctrl_average_gRNA, HT29_wt_IFNg_vs_JAK1c1_IFNg_average_gRNA, HT29_wt_IFNg_vs_JAK1c3_IFNg_average_gRNA, HT29_JAK1c3_IFNg_vs_JAK1c1_IFNg_average_gRNA, HT29_wt_IFNg_vs_JAK2A11_IFNg_average_gRNA, HT29_wt_IFNg_vs_JAK2F4_IFNg_average_gRNA, HT29_JAK2F4_IFNg_vs_JAK2A11_IFNg_average_gRNA,
+    SKMEL2_wt_IFNg_vs_ctrl_average_gRNA, SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_gRNA, SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_gRNA,
+    A375_wt_IFNg_vs_ctrl_average_gRNA, A375_wt_IFNg_vs_JAK1B10_IFNg_average_gRNA, A375_wt_IFNg_vs_JAK1E8_IFNg_average_gRNA, A375_JAK1B10_IFNg_vs_JAK1E8_IFNg_average_gRNA, A375_wt_IFNg_vs_JAK2D9_IFNg_average_gRNA, A375_wt_IFNg_vs_JAK2D10_IFNg_average_gRNA, A375_JAK2D10_IFNg_vs_JAK2D9_IFNg_average_gRNA
+    ), 
+  .id = "sample")
+
+IFNg_average_gRNA
+```
+
+```{r}
+# IFNg -volcano plot
+
+HT29_IFNG<-
+  IFNg_average_gRNA %>%
+  filter(sample %in% c("HT29_wt_IFNg_vs_JAK1c1_IFNg_average_gRNA",
+"HT29_wt_IFNg_vs_JAK1c3_IFNg_average_gRNA",
+"HT29_wt_IFNg_vs_JAK2A11_IFNg_average_gRNA",
+"HT29_wt_IFNg_vs_JAK2F4_IFNg_average_gRNA",
+"HT29_wt_IFNg_vs_ctrl_average_gRNA"))
+
+plot1 <- ggplot(IFNg_average_gRNA, aes(x=LFC)) +
+theme_classic() +
+labs(title= "HT29 gRNAs IFNg vs Control \nCRISPR/Cas9 KO IO") +
+geom_vline(xintercept=c(0,0),linetype="dotted") +
+geom_rug(colour = if_else(IFNg_average_gRNA$Gene %in% c("MAP3K7"), "red", "grey85"), alpha = if_else(IFNg_average_gRNA$Gene %in% c("MAP3K7"), 2, 0.01), length = unit(1, "npc")) +
+ylim(0, 0.1) +
+xlim(-5, 5) +
+theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank()) +
+  facet_wrap(~sample)
+plot1
+
+plot2 <- ggplot(IFNg_average_gRNA, aes(x=LFC)) +
+theme_classic() +
+labs(title= "HT29 gRNAs IFNg vs Control \nCRISPR/Cas9 KO IO") +
+geom_vline(xintercept=c(0,0),linetype="dotted") +
+geom_rug(colour = if_else(IFNg_average_gRNA$Gene %in% c("CHD1"), "red", "grey85"), alpha = if_else(IFNg_average_gRNA$Gene %in% c("CHD1"), 2, 0.01), length = unit(1, "npc")) +
+ylim(0, 0.1) +
+xlim(-5, 5) +
+theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank()) +
+  facet_wrap(~sample)
+plot2
+
+plot3 <- ggplot(HT29_IFNG, aes(x=LFC)) +
+theme_classic() +
+labs(title= "HT29 gRNAs IFNg vs Control \nCRISPR/Cas9 KO IO") +
+geom_vline(xintercept=c(0,0),linetype="dotted") +
+geom_rug(colour = if_else(HT29_IFNG$Gene %in% c("MAP3K7"), "red", "grey85"), alpha = if_else(HT29_IFNG$Gene %in% c("MAP3K7"), 2, 0.01), length = unit(1, "npc")) +
+ylim(0, 0.1) +
+xlim(-5, 5) +
+theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank()) +
+  facet_wrap(~sample)
+plot3
+
+plot4 <- ggplot(HT29_IFNG, aes(x=LFC)) +
+theme_classic() +
+labs(title= "HT29 gRNAs IFNg vs Control \nCRISPR/Cas9 KO IO") +
+geom_vline(xintercept=c(0,0),linetype="dotted") +
+geom_rug(colour = if_else(HT29_IFNG$Gene %in% c("CHD1"), "red", "grey85"), alpha = if_else(HT29_IFNG$Gene %in% c("CHD1"), 2, 0.01), length = unit(1, "npc")) +
+ylim(0, 0.1) +
+xlim(-5, 5) +
+theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank()) +
+  facet_wrap(~sample)
+plot4
+
+HT29_IFNG %>%
+  filter(Gene == "MAP3K7") %>%
+  filter(sample == "HT29_wt_IFNg_vs_ctrl_average_gRNA")
+
+HT29_IFNG %>%
+  filter(Gene == "CHD1") %>%
+  filter(sample == "HT29_wt_IFNg_vs_ctrl_average_gRNA")
+```
+
+```{r}
+#organoid data CRISPR screens MAGeCK
+ORG_screens <- as_tibble(read.csv("ORG_MAGeCK_GP_060125.csv", stringsAsFactors = FALSE, header = TRUE))
+ORG_screens_average <- as_tibble(read.csv("ORG_MAGeCK_GP_average_060125.csv", stringsAsFactors = FALSE, header = TRUE))
+
+ORG_screens
+ORG_screens_average
+
+ORG_screens <- left_join(ORG_screens, ORG_screens_average)
+
+ORG_screens %>%
+select(contains("ITO66T")) %>%
+  colnames()
+```
+
+```{r}
+# ORG - scatter plots
+pos = position_jitter(width = 0.2, height = 0.2, seed = 2)
+
+# rep A vs B T cells
+plot1 <- ggplot(ORG_screens, aes(x=ITO66T_Ctrl_TCells_A_vs_ITO66T_TCells_A_lfc, y= ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_lfc, colour = ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_neglog10Pval)) +
+geom_pointdensity(position = pos, shape = 16) +
+geom_text_repel(aes(label=ifelse(ITO66T_Ctrl_TCells_A_vs_ITO66T_TCells_A_lfc >1.6 & ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_lfc >1.6 | ITO66T_Ctrl_TCells_A_vs_ITO66T_TCells_A_lfc < -4.3 & ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_lfc < -4.3 | gene %in% c("CHD1", "MAP3K7"), gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "black") +
+theme_classic(base_size = 12) +
+labs(title= "") +  xlab("T cells versus Control - Rep. A \n first exposure (log2 fold-change)") + ylab("T cells versus Control - Rep. B \n first exposure (log2 fold-change)") +
+geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_colour_viridis_c(transform = "reverse", option = "magma") +
+   labs(color = "-log10 p-value") +
+geom_hline(yintercept = 0, linetype = "dotted")
+plot1
+
+# rep A1 vs B1 T cells
+plot2 <- ggplot(ORG_screens, aes(x=ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_lfc, y= ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_lfc, colour = ITO66T_Ctrl_TCells_A1_B1_vs_ITO66T_TCells_A1_B1_neglog10Pval)) +
+geom_pointdensity(position = pos, shape = 16) +
+geom_text_repel(aes(label=ifelse(ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_lfc >1.8 & ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_lfc >1.8 | ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_lfc < -7.5 & ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_lfc < -7.5 | gene %in% c("CHD1", "MAP3K7"), gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "black") +
+theme_classic(base_size = 12) +
+labs(title= "") +  xlab("T cells versus Control - Rep. A \n second exposure (log2 fold-change)") + ylab("T cells versus Control - Rep. B \n second exposure (log2 fold-change)") +
+geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_colour_viridis_c(transform = "reverse", option = "magma") +
+   labs(color = "-log10 p-value") +
+geom_hline(yintercept = 0, linetype = "dotted")
+plot2
+
+# rep A vs A1 T cells
+plot3 <- ggplot(ORG_screens, aes(x=ITO66T_Ctrl_TCells_A_vs_ITO66T_TCells_A_lfc, y= ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_lfc, colour = ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_neglog10Pval)) +
+geom_pointdensity(position = pos, shape = 16) +
+geom_text_repel(aes(label=ifelse(ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_lfc >2.5 & ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_lfc >2.5 | ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_lfc < -8.5 & ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_lfc < -8.5 | gene %in% c("CHD1", "MAP3K7"), gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "black") +
+theme_classic(base_size = 12) +
+labs(title= "") +  xlab("T cells versus Control - Rep. A \n first exposure (log2 fold-change)") + ylab("T cells versus Control - Rep. A \n second exposure (log2 fold-change)") +
+geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_colour_viridis_c(transform = "reverse", option = "magma") +
+   labs(color = "-log10 p-value") +
+geom_hline(yintercept = 0, linetype = "dotted")
+plot3
+
+# rep B vs B1 T cells
+plot4 <- ggplot(ORG_screens, aes(x=ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_lfc, y= ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_lfc, colour = ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_neglog10Pval)) +
+geom_pointdensity(position = pos, shape = 16) +
+geom_text_repel(aes(label=ifelse(ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_lfc >2 & ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_lfc >2 | ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_lfc < -7 & ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_lfc < -7 | gene %in% c("CHD1", "MAP3K7"), gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "black") +
+theme_classic(base_size = 12) +
+labs(title= "") +  xlab("T cells versus Control - Rep. B \n first exposure (log2 fold-change)") + ylab("T cells versus Control - Rep. B \n second exposure (log2 fold-change)") +
+geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_colour_viridis_c(transform = "reverse", option = "magma") +
+   labs(color = "-log10 p-value") +
+geom_hline(yintercept = 0, linetype = "dotted")
+plot4
+
+# rep A vs B T IFNg high
+plot5 <- ggplot(ORG_screens, aes(x=ITO66T_Ctrl_IFNγ_Hi_vs_ITO66T_IFNγ_Hi_A_lfc, y= ITO66T_Ctrl_IFNγ_Hi_vs_ITO66T_IFNγ_Hi_B_lfc, colour = ITO66T_Ctrl_IFNγ_Hi_vs_ITO66T_IFNγ_Hi_B_neglog10Pval)) +
+geom_pointdensity(position = pos, shape = 16) +
+geom_text_repel(aes(label=ifelse(ITO66T_Ctrl_IFNγ_Hi_vs_ITO66T_IFNγ_Hi_A_lfc >1.5 & ITO66T_Ctrl_IFNγ_Hi_vs_ITO66T_IFNγ_Hi_B_lfc >1.5 | ITO66T_Ctrl_IFNγ_Hi_vs_ITO66T_IFNγ_Hi_A_lfc < -2.5 & ITO66T_Ctrl_IFNγ_Hi_vs_ITO66T_IFNγ_Hi_B_lfc < -2.5 | gene %in% c("CHD1", "JAK1", "JAK2", "IFNGR1", "IFNGR2", "MAP3K7", "CDX2", "CHD2", "CDX1", "TNFRSF1A"), gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "black") +
+theme_classic(base_size = 12) +
+labs(title= "") +  xlab("IFN-γ versus Control Hi - Rep. A \n (log2 fold-change)") + ylab("IFN-γ versus Control Hi - Rep. B \n (log2 fold-change)") +
+geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_colour_viridis_c(transform = "reverse", option = "magma") +
+   labs(color = "-log10 p-value") +
+geom_hline(yintercept = 0, linetype = "dotted")
+plot5
+
+# rep A vs B IFNg low
+plot6 <- ggplot(ORG_screens, aes(x=ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_lfc, y= ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_B_lfc, colour = ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_neglog10Pval)) +
+geom_pointdensity(position = pos, shape = 16) +
+geom_text_repel(aes(label=ifelse(ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_lfc >1.85 & ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_B_lfc >1.85 | ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_lfc < -2.3 & ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_B_lfc < -2.3 | gene %in% c("CHD1", "MAP3K7", "CDX2"), gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "black") +
+theme_classic(base_size = 12) +
+labs(title= "") +  xlab("IFN-γ versus Control - Rep. A \n (log2 fold-change)") + ylab("IFN-γ versus Control - Rep. B \n (log2 fold-change)") +
+geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_colour_viridis_c(transform = "reverse", option = "magma") +
+   labs(color = "-log10 p-value") +
+geom_hline(yintercept = 0, linetype = "dotted")
+plot6
+
+# rep A vs B TNFa
+plot7 <- ggplot(ORG_screens, aes(x=ITO66T_CTRL_TNFa_A_vs_ITO66T_TNFa_A_lfc, y= ITO66T_CTRL_TNFa_B_vs_ITO66T_TNFa_B_lfc, colour = ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_neglog10Pval)) +
+geom_pointdensity(position = pos, shape = 16) +
+geom_text_repel(aes(label=ifelse(ITO66T_CTRL_TNFa_B_vs_ITO66T_TNFa_B_lfc >2.6 & ITO66T_CTRL_TNFa_A_vs_ITO66T_TNFa_A_lfc >2.6 | ITO66T_CTRL_TNFa_B_vs_ITO66T_TNFa_B_lfc < -5 & ITO66T_CTRL_TNFa_A_vs_ITO66T_TNFa_A_lfc < -5 | gene %in% c("CHD1", "MAP3K7"), gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "black") +
+theme_classic(base_size = 12) +
+labs(title= "") +  xlab("TNF-a versus Control - Rep. A \n (log2 fold-change)") + ylab("TNF-a versus Control - Rep. B \n (log2 fold-change)") +
+geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_colour_viridis_c(transform = "reverse", option = "magma") +
+   labs(color = "-log10 p-value") +
+geom_hline(yintercept = 0, linetype = "dotted")
+plot7
+
+# TNFa vs IFNg
+plot8 <- ggplot(ORG_screens, aes(x=ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc, y= ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc, colour = ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_neglog10Pval)) +
+geom_pointdensity(position = pos, shape = 16) +
+geom_text_repel(aes(label=ifelse(ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc > 5 | ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc > 4 | ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc < -5 | ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc < -3 | gene %in% c("CHD1", "JAK1", "JAK2", "IFNGR1", "IFNGR2", "MAP3K7", "CDX2", "CHD2", "CDX1", "TNFRSF1A"), gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "black") +
+theme_classic(base_size = 12) +
+labs(title= "") +  xlab("TNF-a versus Control - average \n (log2 fold-change)") + ylab("IFNg versus Control - average \n (log2 fold-change)") +
+geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_colour_viridis_c(transform = "reverse", option = "magma") +
+   labs(color = "-log10 p-value") +
+geom_hline(yintercept = 0, linetype = "dotted")
+plot8
+
+# TNFa vs T cells
+plot9 <- ggplot(ORG_screens, aes(x=ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc, y= ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc, colour = ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_neglog10Pval)) +
+geom_pointdensity(position = pos, shape = 16) +
+geom_text_repel(aes(label=ifelse(ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc > 5 | ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc > 4 | ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc < -5 | ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc < -5 | gene %in% c("CHD1", "JAK1", "JAK2", "IFNGR1", "IFNGR2", "MAP3K7", "CDX2", "CHD2", "CDX1", "TNFRSF1A"), gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "black") +
+theme_classic(base_size = 12) +
+labs(title= "") +  xlab("TNF-a versus Control - average \n (log2 fold-change)") + ylab("T cells versus Control - average \n (log2 fold-change)") +
+geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_colour_viridis_c(transform = "reverse", option = "magma") +
+   labs(color = "-log10 p-value") +
+geom_hline(yintercept = 0, linetype = "dotted")
+plot9
+
+# IFNg vs T cells
+plot10 <- ggplot(ORG_screens, aes(x=ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc, y= ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc, colour = ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_neglog10Pval)) +
+geom_pointdensity(position = pos, shape = 16) +
+geom_text_repel(aes(label=ifelse(ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc > 2.5 | ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc > 4 | ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc < -3.5 | ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc < -5 | gene %in% c("CHD1", "JAK1", "JAK2", "IFNGR1", "IFNGR2", "MAP3K7", "CDX2", "CHD2", "CDX1", "TNFRSF1A"), gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "black") +
+theme_classic(base_size = 12) +
+labs(title= "") +  xlab("IFN-g versus Control - average \n (log2 fold-change)") + ylab("T cells versus Control - average \n (log2 fold-change)") +
+geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_colour_viridis_c(transform = "reverse", option = "magma") +
+   labs(color = "-log10 p-value") +
+geom_hline(yintercept = 0, linetype = "dotted")
+plot10
+```
+
+```{r}
+# add organoid cytokine screens hit annotations
+ORG_screens
+
+ORG_screens_2 <-
+ORG_screens %>% 
+  mutate(Cytokine_hit = ifelse(ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc > 0.5 & ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_Pval < 0.05 & ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_fdr < 0.25, "IFNg_res", ifelse(ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc < -0.5 & ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_Pval < 0.01 & ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_fdr < 0.25, "IFNg_sens", ifelse(ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc > 0.5 & ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_Pval < 0.05 & ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_fdr< 0.25, "TNFa_res", ifelse(ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc < -0.5 & ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_Pval < 0.05 & ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_Pval < 0.25, "TNFa_sens", NA))))) %>%
+  mutate(Cytokine_hit = ifelse(ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc > 0.5 & ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc > 0.5 & ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_fdr < 0.25 & ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_Pval < 0.05 & ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_Pval < 0.05 & ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_fdr < 0.25, "res_both", ifelse(ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc < -0.5 & ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc < -0.5 & ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_fdr < 0.25 & ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_Pval < 0.05 & ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_Pval < 0.05 & ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_fdr < 0.25, "sens_both", Cytokine_hit)))
+
+# check categories for cytokine screens organoid cytokine screens hit annotations
+
+ORG_screens_2 %>%
+  count(Cytokine_hit)
+
+ORG_screens_2 %>% 
+  filter(Cytokine_hit == "res_both")
+
+ORG_screens_2 %>% 
+  filter(Cytokine_hit == "sens_both")
+
+#hits from org screens
+ORG_screens_2 %>%
+  select(gene, ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc, ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_Pval, ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_fdr, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_Pval, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_fdr, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_fdr, 
+         ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_lfc, ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_Pval, ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_fdr, ITO66T_Ctrl_TCells_A_vs_ITO66T_TCells_A_lfc, ITO66T_Ctrl_TCells_A_vs_ITO66T_TCells_A_Pval, ITO66T_Ctrl_TCells_A_vs_ITO66T_TCells_A_fdr, ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_lfc, ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_Pval, ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_fdr, ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_lfc, ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_Pval, ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_fdr, Cytokine_hit) %>%
+  filter(ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc > 0.5 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval < 0.05 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_fdr < 0.25 | ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc < -0.5 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval < 0.05 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_fdr < 0.25 | is.na(Cytokine_hit) == FALSE)  %>%
+  write.csv("ORG_screens.csv")
+
+# check status of hits in the T cell screens and proposed antigens
+ORG_screens_2 %>%
+  select(gene, Cytokine_hit, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_Pval, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc, ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_lfc, ITO66T_Ctrl_TCells_A_vs_ITO66T_TCells_A_lfc, ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_lfc, ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_lfc,ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval, ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc, ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_Pval, ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_Pval, ITO66T_Ctrl_TCells_A_vs_ITO66T_TCells_A_Pval, ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_Pval, ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_Pval) %>%
+  filter(gene %in% c("MAP3K7","CHD1", "CDX2", "CHD2", "EEF1A1", "ABT1", "CHUK", "VPS18", "TNFSF1B"))
+```
+
+```{r}
+# annotate resistance and sensitizing hits from TNF and IFNg on T cell screens
+
+plot4 <- ggplot(ORG_screens_2, aes(x=ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_lfc, y= ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_lfc, colour = Cytokine_hit)) +
+geom_pointdensity(position = pos, shape = 1, size = 0.2) +
+theme_classic(base_size = 12) +
+labs(title= "") +  xlab("Control versus T-cells (log2 fold-change) \nFirst exposure") + ylab("Control versus T-cells (log2 fold-change)\n Second exposure") +
+geom_vline(xintercept = 0, linetype = "dotted") +
+   labs(color = "Organoid cytokine screen hit") +
+  scale_colour_manual(values=c("royalblue1","salmon", "green3", "blue", "orange", "black"), na.value="grey55") +
+  geom_text_repel(aes(label=ifelse(ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_lfc > 1.5 & ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_lfc > 1.5  | ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_lfc < -5.5 & ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_lfc < -5.5, gene, "")), size=3, position=pos, max.overlaps = Inf) +
+geom_hline(yintercept = 0, linetype = "dotted")
+plot4
+
+plot5 <- ggplot(ORG_screens_2, aes(x=ITO66T_Ctrl_TCells_A_vs_ITO66T_TCells_A_lfc, y= ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_lfc, colour = Cytokine_hit)) +
+geom_pointdensity(position = pos, shape = 1, size = 0.2) +
+theme_classic(base_size = 12) +
+labs(title= "") +  xlab("Control versus T-cells (log2 fold-change) \nFirst exposure") + ylab("Control versus T-cells (log2 fold-change)\n Second exposure") +
+geom_vline(xintercept = 0, linetype = "dotted") +
+   labs(color = "Organoid cytokine screen hit") +
+  scale_colour_manual(values=c("royalblue1","salmon", "blue4", "red3", "orange", "black"), na.value="grey50") +
+  geom_text_repel(aes(label=ifelse(gene %in% c("CHD1", "JAK1", "JAK2", "IFNGR1", "IFNGR2", "MAP3K7", "CHUK", "TNFRSF1A", "TNFRSF1B", "ABT1", "VPS18", "CASP8", "COX7A1", "IRF1", "TAP1", "TAP2", "GRHL2"), gene, "")), size=3, position=pos, max.overlaps = Inf) +
+geom_hline(yintercept = 0, linetype = "dotted")
+plot5
+
+plot6 <- ggplot(ORG_screens_2, aes(x=ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_lfc, y= ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_lfc, colour = Cytokine_hit)) +
+geom_pointdensity(position = pos, shape = 1, size = 0.1) +
+theme_classic(base_size = 12) +
+labs(title= "") +  xlab("Control versus T-cells (log2 fold-change) \nFirst exposure") + ylab("Control versus T-cells (log2 fold-change)\n Second exposure") +
+geom_vline(xintercept = 0, linetype = "dotted") +
+   labs(color = "Organoid cytokine screen hit") +
+  scale_colour_manual(values=c("royalblue1","salmon", "black", "orange", "blue4", "red3"), na.value="grey50") +
+  geom_text_repel(aes(label=ifelse(gene %in% c("CHD1", "JAK1", "JAK2", "IFNGR1", "IFNGR2", "MAP3K7", "CHUK", "TNFRSF1A", "TNFRSF1B", "ABT1", "VPS18", "CASP8", "COX7A1", "IRF1", "TAP1", "TAP2", "GRHL2"), gene, "")), size=3, position=pos, max.overlaps = Inf) +
+geom_hline(yintercept = 0, linetype = "dotted")
+plot6
+
+ggsave(plot = plot6, "ORG_screen_dot.eps", width = 6, height = 3.5, path ="/Users/mc32/Documents/Matt_Coelho/Bioinformatics/Minlib_SL_JAK1_JAK2_Cas9_Watterson/figures_export")
+```
+
+```{r}
+#volcano plot of average
+
+plot5 <- ggplot(ORG_screens_2, aes(x=ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc, y= ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_neglog10Pval, colour = Cytokine_hit)) +
+geom_pointdensity(position = pos, shape = 1, size = 0.2) +
+theme_classic(base_size = 12) +
+labs(title= "") +  xlab("Control versus T-cells (log2 fold-change) \nFirst exposure") + ylab("Control versus T-cells (log2 fold-change)\n Second exposure") +
+geom_vline(xintercept = 0, linetype = "dotted") +
+   labs(color = "Organoid cytokine screen hit") +
+  scale_colour_manual(values=c("royalblue1","salmon1", "blue4", "red3", "black", "orange"), na.value="grey50") +
+  geom_text_repel(aes(label=ifelse(ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_lfc > 1.5 & ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_lfc > 1.5 & Cytokine_hit %in% c("IFNg_res", "TNFa_res") | ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_lfc < -5.5 & ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_lfc < -5.5 & Cytokine_hit %in% c("IFNg_sens", "TNFa_sens") | gene %in% c("CHD1", "JAK1", "JAK2", "IFNGR1", "IFNGR2", "MAP3K7", "CDX2", "CHUK", "DEPTOR","TNFRSF1A", "CHD2", "TNFRSF1B", "SLC26A2", "RPTOR", "STAG2", "VPS18"), gene, "")), size=3, position=pos, max.overlaps = Inf) +
+geom_hline(yintercept = 0, linetype = "dotted")
+plot5
+
+plot6 <- ggplot(ORG_screens_2, aes(x=ITO66T_Ctrl_TCells_A1_B1_vs_ITO66T_TCells_A1_B1_lfc, y= ITO66T_Ctrl_TCells_A1_B1_vs_ITO66T_TCells_A1_B1_neglog10Pval, colour = Cytokine_hit)) +
+geom_pointdensity(position = pos, shape = 1, size = 0.2) +
+theme_classic(base_size = 12) +
+labs(title= "") +  xlab("Control versus T-cells (log2 fold-change) \nFirst exposure") + ylab("Control versus T-cells (log2 fold-change)\n Second exposure") +
+geom_vline(xintercept = 0, linetype = "dotted") +
+   labs(color = "Organoid cytokine screen hit") +
+  scale_colour_manual(values=c("royalblue1","salmon1", "blue4", "red3", "black", "orange"), na.value="grey50") +
+  geom_text_repel(aes(label=ifelse(ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_lfc > 1.5 & ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_lfc > 1.5 & Cytokine_hit %in% c("IFNg_res", "TNFa_res") | ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_lfc < -5.5 & ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_lfc < -5.5 & Cytokine_hit %in% c("IFNg_sens", "TNFa_sens") | gene %in% c("CHD1", "JAK1", "JAK2", "IFNGR1", "IFNGR2", "MAP3K7", "CDX2", "CHUK", "DEPTOR","TNFRSF1A", "CHD2", "TNFRSF1B", "SLC26A2", "RPTOR", "STAG2", "VPS18"), gene, "")), size=3, position=pos, max.overlaps = Inf) +
+geom_hline(yintercept = 0, linetype = "dotted")
+plot6
+```
+
+```{r}
+#analyse preprint perturb seq from miscale Satija lab
+
+gene_sets_satija <- as_tibble(read.csv("Satija_filtered_140125.csv", stringsAsFactors = FALSE, header = TRUE))
+gene_sets_satija
+
+gene_sets_satija %>%
+  colnames()
+
+gene_sets_satija %>%
+  count()
+
+intersect(gene_sets_satija$IFNG_up_HT29_IFNGR1..IFNGR2..JAK1..JAK2..STAT1, gene_sets_satija$TNFA_up_HT29_CHUK..IKBKG..MAP3K7..NFKBIA..TNFRSF1A)
+intersect(gene_sets_satija$IFNG_down_HT29_IFNGR1..IFNGR2..JAK1..JAK2..STAT1, gene_sets_satija$TNFA_down_HT29_CHUK..IKBKG..MAP3K7..NFKBIA..TNFRSF1A)
+```
+
+```{r}
+# assess hits for TNFa and IFNg in Venn diagram
+
+#all hits for ORG average screen with LFC ><0.5 and P val < 0.05
+ORG_hits <- 
+  ORG_screens_2 %>%
+  select(gene, ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc, ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_Pval, ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_fdr, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_Pval, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_fdr, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_fdr, 
+         ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_lfc, ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_Pval, ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_fdr, ITO66T_Ctrl_TCells_A_vs_ITO66T_TCells_A_lfc, ITO66T_Ctrl_TCells_A_vs_ITO66T_TCells_A_Pval, ITO66T_Ctrl_TCells_A_vs_ITO66T_TCells_A_fdr, ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_lfc, ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_Pval, ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_fdr, ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_lfc, ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_Pval, ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_fdr, Cytokine_hit) %>%
+  filter(ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc > 0.5 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval < 0.05 | ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc < -0.5 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval < 0.05 | is.na(Cytokine_hit) == FALSE)
+
+#enumerate cytokine hits as a proportion of ORG hits
+ORG_hits %>%
+  count(Cytokine_hit)
+
+#all hits for ORG average screen with LFC ><0.5 and P val < 0.05 and IFNg hit
+#RESISTANCE
+#IFNg
+ORG_hits %>%
+  filter(ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc > 0.5 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval < 0.05) %>%
+  filter(Cytokine_hit == "IFNg_res") %>%
+  arrange(desc(ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc))
+
+#TNFa
+ORG_hits %>%
+    filter(ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc > 0.5 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval < 0.05) %>%
+  filter(Cytokine_hit == "TNFa_res") %>%
+  arrange(desc(ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc))
+
+#both
+ORG_hits %>%
+    filter(ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc > 0.5 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval < 0.05) %>%
+  filter(Cytokine_hit == "res_both") %>%
+  arrange(desc(ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc))
+
+#SENSITIVITY
+#IFNg
+ORG_hits %>%
+  filter(ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc < -0.5 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval < 0.05) %>%
+  filter(Cytokine_hit == "IFNg_sens") %>%
+  arrange(ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc)
+
+#TNFa
+ORG_hits %>%
+    filter(ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc < -0.5 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval < 0.05) %>%
+  filter(Cytokine_hit == "TNFa_sens") %>%
+  arrange(ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc)
+
+#both
+ORG_hits %>%
+    filter(ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc < -0.5 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval < 0.05) %>%
+  filter(Cytokine_hit == "sens_both") %>%
+  arrange(ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc)
+
+#not T cells but dual resistant
+ORG_screens_2 %>%
+    filter(Cytokine_hit == "res_both") %>%
+  filter(ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc < 0.5 | ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval > 0.05) %>%
+    arrange(desc(ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc)) %>%
+   select(gene, Cytokine_hit, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc, ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc)
+
+#not T cells but dual sensitive
+ORG_screens_2 %>%
+    filter(Cytokine_hit == "sens_both") %>%
+  filter(ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc > -0.5 | ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval > 0.05) %>%
+  arrange(ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc) %>%
+   select(gene, Cytokine_hit, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc, ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc)
+
+
+#T cells only - res
+ORG_screens_2 %>%
+    filter(is.na(Cytokine_hit)) %>%
+  filter(ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc > 0.5 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval < 0.05) %>%
+    arrange(desc(ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc)) %>%
+   select(gene, Cytokine_hit, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_fdr, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval, ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc)
+  
+#T cells only - sens
+ORG_screens_2 %>%
+    filter(is.na(Cytokine_hit)) %>%
+  filter(ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc < -0.5 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval < 0.05 & ITO66T_Ctrl_TCells_A_vs_ITO66T_TCells_A_lfc < -0.5 & ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_lfc < -0.5 & ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_lfc < -0.5 & ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_lfc < -0.5) %>%
+    arrange(ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc) %>%
+   select(gene, Cytokine_hit, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_fdr, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval, ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc)
+
+
+```
+
+```{r}
+# replicate correlation ORG Pearson
+
+#ORGS A B
+rep1 <- ORG_screens_2 %>%
+  select(gene, ITO66T_Ctrl_TCells_A_vs_ITO66T_TCells_A_lfc)
+
+rep2 <- ORG_screens_2 %>%
+  select(gene, ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_lfc)
+
+rep_correlation <- left_join(rep1, rep2) %>% 
+  filter(is.na(ITO66T_Ctrl_TCells_A_vs_ITO66T_TCells_A_lfc) ==FALSE & is.na(ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_lfc)==FALSE )
+
+r <- cor(rep_correlation$ITO66T_Ctrl_TCells_A_vs_ITO66T_TCells_A_lfc, rep_correlation$ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_lfc, method = "pearson")
+
+r
+
+#ORGS A1 B1
+rep1 <- ORG_screens_2 %>%
+  select(gene, ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_lfc)
+
+rep2 <- ORG_screens_2 %>%
+  select(gene, ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_lfc)
+
+rep_correlation <- left_join(rep1, rep2) %>% 
+  filter(is.na(ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_lfc) ==FALSE & is.na(ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_lfc)==FALSE )
+
+r1 <- cor(rep_correlation$ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_lfc, rep_correlation$ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_lfc, method = "pearson")
+
+r1
+
+#ORGS B B1
+rep1 <- ORG_screens_2 %>%
+  select(gene, ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_lfc)
+
+rep2 <- ORG_screens_2 %>%
+  select(gene, ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_lfc)
+
+rep_correlation <- left_join(rep1, rep2) %>% 
+  filter(is.na(ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_lfc) ==FALSE & is.na(ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_lfc)==FALSE )
+
+r2 <- cor(rep_correlation$ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_lfc, rep_correlation$ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_lfc, method = "pearson")
+
+r2
+
+#ORGS A A1
+rep1 <- ORG_screens_2 %>%
+  select(gene, ITO66T_Ctrl_TCells_A_vs_ITO66T_TCells_A_lfc)
+
+rep2 <- ORG_screens_2 %>%
+  select(gene, ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_lfc)
+
+rep_correlation <- left_join(rep1, rep2) %>% 
+  filter(is.na(ITO66T_Ctrl_TCells_A_vs_ITO66T_TCells_A_lfc) ==FALSE & is.na(ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_lfc)==FALSE )
+
+r3 <- cor(rep_correlation$ITO66T_Ctrl_TCells_A_vs_ITO66T_TCells_A_lfc, rep_correlation$ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_lfc, method = "pearson")
+
+r3
+
+#ORGS IFNg 
+rep1 <- ORG_screens_2 %>%
+  select(gene, ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_lfc)
+
+rep2 <- ORG_screens_2 %>%
+  select(gene, ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_B_lfc)
+
+rep_correlation <- left_join(rep1, rep2) %>% 
+  filter(is.na(ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_lfc) ==FALSE & is.na(ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_B_lfc)==FALSE )
+
+r4 <- cor(rep_correlation$ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_lfc, rep_correlation$ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_B_lfc, method = "pearson")
+
+r4
+
+#ORGS TNFa
+rep1 <- ORG_screens_2 %>%
+  select(gene, ITO66T_CTRL_TNFa_A_vs_ITO66T_TNFa_A_lfc)
+
+rep2 <- ORG_screens_2 %>%
+  select(gene, ITO66T_CTRL_TNFa_B_vs_ITO66T_TNFa_B_lfc)
+
+rep_correlation <- left_join(rep1, rep2) %>% 
+  filter(is.na(ITO66T_CTRL_TNFa_A_vs_ITO66T_TNFa_A_lfc) ==FALSE & is.na(ITO66T_CTRL_TNFa_B_vs_ITO66T_TNFa_B_lfc)==FALSE )
+
+r5 <- cor(rep_correlation$ITO66T_CTRL_TNFa_A_vs_ITO66T_TNFa_A_lfc, rep_correlation$ITO66T_CTRL_TNFa_B_vs_ITO66T_TNFa_B_lfc, method = "pearson")
+
+r5
+```
