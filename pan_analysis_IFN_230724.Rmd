@@ -17,6 +17,8 @@ library(reshape2)
 library(ggrepel)
 library(stringr)
 library(ggpointdensity)
+library(pheatmap)
+library(RColorBrewer)
 ```
 
 ```{r}
@@ -435,7 +437,7 @@ IFNg_average <-
 ```
 
 ```{r}
-# change the variables in the merged mageck datatable to interpreatble values
+# change the variables in the merged mageck datatable to interpretable values
 IFNg_average
 IFNg_average <- dplyr::rename(IFNg_average, gene = id)
  IFNg_average <- mutate(IFNg_average, pvalue = ifelse(neg.lfc< 0, neg.p.value, pos.p.value))
@@ -452,7 +454,7 @@ pos = position_jitter(width = 0.2, height = 0.2, seed = 2)
 
 plot1 <- ggplot(IFNg_average, aes(x=neg.lfc, y= neg_log_10_p, colour = legend)) +
 geom_point(size =3, position = pos) +
-geom_text_repel(aes(label=ifelse(pvalue < 0.05 & fdr <0.1 & neg.lfc > 3 | pvalue < 0.05 & fdr <0.1 & neg.lfc < -3, gene, "")), size=3, position=pos, max.overlaps = Inf) +
+#geom_text_repel(aes(label=ifelse(pvalue < 0.05 & fdr <0.1 & neg.lfc > 3 | pvalue < 0.05 & fdr <0.1 & neg.lfc < -3, gene, "")), size=3, position=pos, max.overlaps = Inf) +
 theme_classic() +
   facet_wrap(~sample, ncol =7) +
 scale_colour_manual(values=c("royalblue1","salmon", "grey45"), na.value="grey80") +
@@ -467,7 +469,7 @@ pos = position_jitter(width = 0.2, height = 0.2, seed = 2)
 
 plot1 <- ggplot(IFNg_average, aes(x=neg.lfc, y= neg_log_10_p, colour = legend)) +
 geom_point(size =3, position = pos) +
-geom_text_repel(aes(label=ifelse(legend !="not significant" & gene %in% c("TYK2", "YARS2", "RARS2", "CARS1", "PARS2","TARS2", "HARS1", "IARS2", "FARSB", "MTOR", "CHMP5", "JAK1", "VPS37A", "STAT1", "TNIP1", "PTPN2", "SOCS1", "CHD1", "MAP3K7"), gene, "")), size=3, position=pos, max.overlaps = Inf) +
+#geom_text_repel(aes(label=ifelse(legend !="not significant" & gene %in% c("TYK2", "YARS2", "RARS2", "CARS1", "PARS2","TARS2", "HARS1", "IARS2", "FARSB", "MTOR", "CHMP5", "JAK1", "VPS37A", "STAT1", "TNIP1", "PTPN2", "SOCS1", "CHD1", "MAP3K7"), gene, "")), size=3, position=pos, max.overlaps = Inf) +
 theme_classic() +
   facet_wrap(~sample, ncol =7) +
 scale_colour_manual(values=c("royalblue1","salmon", "grey45"), na.value="grey80") +
@@ -479,7 +481,7 @@ plot1
 
 plot1 <- ggplot(IFNg_average, aes(x=neg.rank, y= neg.lfc, size = fdr, alpha = neg_log_10_p)) +
 geom_point(shape = 1) +
-geom_text_repel(aes(label=ifelse(legend !="not significant" & gene %in% c("TYK2", "YARS2", "RARS2", "CARS1", "PARS2","TARS2", "HARS1", "IARS2", "FARSB", "MTOR", "CHMP5", "JAK1", "VPS37A", "STAT1", "TNIP1", "PTPN2", "SOCS1", "CHD1", "MAP3K7"), gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "red") +
+#geom_text_repel(aes(label=ifelse(legend !="not significant" & gene %in% c("TYK2", "YARS2", "RARS2", "CARS1", "PARS2","TARS2", "HARS1", "IARS2", "FARSB", "MTOR", "CHMP5", "JAK1", "VPS37A", "STAT1", "TNIP1", "PTPN2", "SOCS1", "CHD1", "MAP3K7"), gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "red") +
   theme_classic() +
   facet_wrap(~sample, ncol =7) +
     scale_alpha_continuous(range = c(0.2,1)) +
@@ -938,7 +940,7 @@ pos = position_jitter(width = 0.2, height = 0.2, seed = 2)
 
 plot1 <- ggplot(ctrl_average, aes(x=neg.lfc, y= neg_log_10_p, colour = legend)) +
 geom_point(size=3, position = pos) +
-geom_text_repel(aes(label=ifelse(pvalue < 0.05 & fdr <0.1, gene, "")), size=3, position=pos, max.overlaps = Inf) +
+#geom_text_repel(aes(label=ifelse(pvalue < 0.05 & fdr <0.1, gene, "")), size=3, position=pos, max.overlaps = Inf) +
 theme_classic() +
   facet_wrap(~sample, ncol =6) +
 scale_colour_manual(values=c("royalblue1","salmon", "grey45"), na.value="grey80") +
@@ -948,7 +950,6 @@ plot1
 
 ```{r}
 # investigation of hits
-
  HT29_cntrl <- ctrl_average %>% 
   filter(legend != ("not significant")) %>%
   filter(str_detect(sample, "HT29")) %>%
@@ -1595,56 +1596,73 @@ plot3
 
 ```{r}
 #plot JAK1 vs JAK2 for IFNb_average and plot IFNg vs IFNb for  SKMEL2
-
+IFNb_average
 SKMEL_BETA_JAK1c1 <-
   IFNb_average %>%
   filter(sample == "SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average") %>%
-  dplyr::rename(SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average = neg.lfc) %>%
-  select(SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average, gene)
+  dplyr::rename(SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_lfc = neg.lfc) %>%
+  dplyr::rename(SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_fdr = fdr) %>%
+    dplyr::rename(SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_neg_log_10_p = neg_log_10_p) %>%
+      dplyr::rename(SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_Pvalue = pvalue) %>%
+  select(gene, SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_lfc, SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_fdr, SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_neg_log_10_p, SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_Pvalue)
 
 SKMEL_BETA_JAK1c2 <-
   IFNb_average %>%
   filter(sample == "SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average") %>%
-  dplyr::rename(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average = neg.lfc) %>%
+  dplyr::rename(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_lfc = neg.lfc) %>%
   dplyr::rename(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_fdr = fdr) %>%
     dplyr::rename(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_neg_log_10_p = neg_log_10_p) %>%
-  select(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average, SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_fdr, SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_neg_log_10_p, gene)
+      dplyr::rename(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_Pvalue = pvalue) %>%
+  select(gene, SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_lfc, SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_fdr, SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_neg_log_10_p, SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_Pvalue)
 
 SKMEL_GAMMA_JAK1c1 <- 
   IFNg_average %>%
   filter(sample == "SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average") %>% 
-  dplyr::rename(SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average = neg.lfc) %>%
-  select(SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average, gene)
+ dplyr::rename(SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_lfc = neg.lfc) %>%
+  dplyr::rename(SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_fdr = fdr) %>%
+    dplyr::rename(SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_neg_log_10_p = neg_log_10_p) %>%
+      dplyr::rename(SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_Pvalue = pvalue) %>%
+  select(gene, SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_lfc, SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_fdr, SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_neg_log_10_p, SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_Pvalue)
 
 SKMEL_GAMMA_JAK1c2 <- 
   IFNg_average %>%
   filter(sample == "SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average") %>% 
-  dplyr::rename(SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average = neg.lfc) %>%
+  dplyr::rename(SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_lfc = neg.lfc) %>%
   dplyr::rename(SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_fdr = fdr) %>%
     dplyr::rename(SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_neg_log_10_p = neg_log_10_p) %>%
-  select(SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average, SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_fdr, SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_neg_log_10_p, gene)
+      dplyr::rename(SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_Pvalue = pvalue) %>%
+  select(gene, SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_lfc, SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_fdr, SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_neg_log_10_p, SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_Pvalue)
 
 BETA <- left_join(SKMEL_BETA_JAK1c1, SKMEL_BETA_JAK1c2)
 BETA <- left_join(BETA, SKMEL_GAMMA_JAK1c1)
 BETA <- left_join(BETA, SKMEL_GAMMA_JAK1c2)
+BETA
+
+#assess the best replicates
+SKMEL_BETA_JAK1c1 %>% arrange(SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_lfc)
+SKMEL_BETA_JAK1c2 %>% arrange(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_lfc)
+SKMEL_GAMMA_JAK1c1 %>% arrange(desc(SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_lfc))
+SKMEL_GAMMA_JAK1c2 %>% arrange(desc(SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_lfc))
 ```
 
 ```{r}
+#C8 clones
 BETA
 
 BETA <- 
   BETA %>%
   mutate(fdr = ifelse(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_fdr < SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_fdr, SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_fdr, SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_fdr)) %>%
   mutate(neg_log_10_p = ifelse(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_neg_log_10_p < SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_neg_log_10_p, SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_neg_log_10_p, SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_neg_log_10_p))
+BETA
 ```
 
 ```{r}
 # IFNb - scatter plots
 pos = position_jitter(width = 0.2, height = 0.2, seed = 2)
 
-plot1 <- ggplot(BETA, aes(x=SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average, y= SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average, size = fdr, colour = neg_log_10_p)) +
+plot1 <- ggplot(BETA, aes(x=SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_lfc, y= SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_lfc, size = fdr, colour = neg_log_10_p)) +
 geom_pointdensity(position = pos, shape = 16) +
-geom_text_repel(aes(label=ifelse(gene %in% c("PTPN2", "JAK1", "JAK2", "ADAR", "IFNGR1", "IFNGR2", "IFNAR1", "IFNAR2", "IRF9", "STAT2", "TYK2", "RARS1" ,"HARS1", "STRAP", "ENY2", "EIF4G2", "TSC1", "VPS25", "STAT1", "CHMP3", "CHMP5", "TSC2", "ISG15", "IRF1", "SEC62", "VPS18", "UBE2S", "ELOB"), gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "black") +
+geom_text_repel(aes(label=ifelse(gene %in% c("PTPN2", "JAK1", "JAK2", "ADAR", "IFNGR1", "IFNGR2", "IFNAR1", "IFNAR2", "IRF9", "STAT2", "TYK2", "RARS1" ,"HARS1", "STRAP", "ENY2", "EIF4G2", "TSC1", "VPS25", "STAT1", "CHMP3", "CHMP5", "TSC2", "ISG15", "IRF1", "SEC62", "VPS18", "UBE2S", "ELOB", "CFLAR", "RBM10", "ATG9A", "CASP8", "THOC", "U2AF1", "SLC25A3", "CHD1", "MAP3K7"), gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "black") +
 theme_classic(base_size = 12) +
 labs(title= "") +  xlab(expression(IFN*beta ~ "log2 fold-change")) + ylab(expression(IFN*gamma ~ "log2 fold-change")) +
 geom_vline(xintercept = 0, linetype = "dotted") +
@@ -1658,69 +1676,168 @@ ggsave(plot = plot1, "beta_vs_gamma_HT29.eps", width = 7, height = 5, path ="/Us
 ```
 
 ```{r}
-# find genes shared and private to Beta and Gamma in SKMEL2
-#shared res
+#shared res hits
+shared_res_C8 <-
 BETA %>%
-  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average >2 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average >2)
-#private res beta
-BETA %>%
-  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average >3 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average <2)
-#private res gamma
-BETA %>%
-  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average <1 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average >2)
+  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_lfc > 1.5 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_lfc > 1.5) %>%
+  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_Pvalue < 0.05 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_Pvalue < 0.05)
 
-#shared sens
+#shared sens hits
+shared_sens_C8 <-
 BETA %>%
-  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average < -2 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average < -2)
-#private sens beta
+  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_lfc < -1.5 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_lfc < -1.5) %>%
+  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_Pvalue < 0.05 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_Pvalue < 0.05)
+
+#private res hits
+beta_res_C8 <-
 BETA %>%
-  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average < -2 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average > -2)
-#private sens gamma
+  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_lfc > 1.5 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_lfc < 1) %>%
+  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_Pvalue < 0.05 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_Pvalue > 0.05) %>%
+  arrange(desc(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_lfc))
+
+gamma_res_C8 <-
 BETA %>%
-  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average > -1 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average < -3)
+  filter(SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_lfc > 1.5 & SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_lfc < 1) %>%
+  filter(SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_Pvalue < 0.05 & SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_Pvalue > 0.05) %>%
+  arrange(desc(SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_lfc))
+
+#private sens hits
+beta_sens_C8 <-
+BETA %>%
+  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_lfc < -1.5 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_lfc > -1) %>%
+  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_Pvalue < 0.05 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_Pvalue > 0.05) %>%
+  arrange(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_lfc)
+
+gamma_sens_C8 <-
+BETA %>%
+  filter(SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_lfc < -1.5 & SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_lfc > -1) %>%
+  filter(SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_Pvalue < 0.05 & SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_Pvalue > 0.05) %>%
+  arrange(SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_lfc)
+```
+
+```{r}
+#B8 clones
+BETA
+
+BETA <- 
+  BETA %>%
+  mutate(fdr = ifelse(SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_fdr < SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_fdr, SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_fdr, SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_fdr)) %>%
+  mutate(neg_log_10_p = ifelse(SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_neg_log_10_p < SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_neg_log_10_p, SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_neg_log_10_p, SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_neg_log_10_p))
+BETA
+```
+
+```{r}
+# IFNb - scatter plots
+pos = position_jitter(width = 0.2, height = 0.2, seed = 2)
+
+plot1 <- ggplot(BETA, aes(x=SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_lfc, y= SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_lfc, size = fdr, colour = neg_log_10_p)) +
+geom_pointdensity(position = pos, shape = 16) +
+geom_text_repel(aes(label=ifelse(gene %in% c("PTPN2", "JAK1", "JAK2", "ADAR", "IFNGR1", "IFNGR2", "IFNAR1", "IFNAR2", "IRF9", "STAT2", "TYK2", "RARS1" ,"HARS1", "STRAP", "ENY2", "EIF4G2", "TSC1", "VPS25", "STAT1", "CHMP3", "CHMP5", "TSC2", "ISG15", "IRF1", "SEC62", "VPS18", "UBE2S", "ELOB"), gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "black") +
+theme_classic(base_size = 12) +
+labs(title= "") +  xlab(expression(IFN*beta ~ "log2 fold-change")) + ylab(expression(IFN*gamma ~ "log2 fold-change")) +
+geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_colour_viridis_c(transform = "reverse", option = "magma") +
+  scale_size(transform = "reverse", range = c(0.1,3) ) +
+   labs(color = "-log10 p-value", size = "FDR") +
+geom_hline(yintercept = 0, linetype = "dotted")
+plot1
+
+plot2 <- ggplot(BETA, aes(x=SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_lfc, y= SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_lfc, size = SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_fdr, colour = SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_neg_log_10_p)) +
+geom_pointdensity(position = pos, shape = 16) +
+geom_text_repel(aes(label=ifelse(gene %in% c("PTPN2", "JAK1", "JAK2", "ADAR", "IFNGR1", "IFNGR2", "IFNAR1", "IFNAR2", "IRF9", "STAT2", "TYK2", "RARS1" ,"HARS1", "STRAP", "ENY2", "EIF4G2", "TSC1", "VPS25", "STAT1", "CHMP3", "CHMP5", "TSC2", "ISG15", "IRF1", "SEC62", "VPS18", "UBE2S", "ELOB"), gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "black") +
+theme_classic(base_size = 12) +
+labs(title= "") +  xlab(expression(IFN*beta ~ "log2 fold-change")) + ylab(expression(IFN*gamma ~ "log2 fold-change")) +
+geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_colour_viridis_c(transform = "reverse", option = "magma") +
+  scale_size(transform = "reverse", range = c(0.1,3) ) +
+   labs(color = "-log10 p-value", size = "FDR") +
+geom_hline(yintercept = 0, linetype = "dotted")
+plot2
+
+plot3 <- ggplot(BETA, aes(x=SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_lfc, y= SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_lfc, size = SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_fdr, colour = SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_neg_log_10_p)) +
+geom_pointdensity(position = pos, shape = 16) +
+geom_text_repel(aes(label=ifelse(gene %in% c("PTPN2", "JAK1", "JAK2", "ADAR", "IFNGR1", "IFNGR2", "IFNAR1", "IFNAR2", "IRF9", "STAT2", "TYK2", "RARS1" ,"HARS1", "STRAP", "ENY2", "EIF4G2", "TSC1", "VPS25", "STAT1", "CHMP3", "CHMP5", "TSC2", "ISG15", "IRF1", "SEC62", "VPS18", "UBE2S", "ELOB"), gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "black") +
+theme_classic(base_size = 12) +
+labs(title= "") +  xlab(expression(IFN*beta ~ "log2 fold-change")) + ylab(expression(IFN*gamma ~ "log2 fold-change")) +
+geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_colour_viridis_c(transform = "reverse", option = "magma") +
+  scale_size(transform = "reverse", range = c(0.1,3) ) +
+   labs(color = "-log10 p-value", size = "FDR") +
+geom_hline(yintercept = 0, linetype = "dotted")
+plot3
+
+plot4 <- ggplot(BETA, aes(x=SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_lfc, y= SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_lfc, size = SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_fdr, colour = SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_neg_log_10_p)) +
+geom_pointdensity(position = pos, shape = 16) +
+geom_text_repel(aes(label=ifelse(gene %in% c("PTPN2", "JAK1", "JAK2", "ADAR", "IFNGR1", "IFNGR2", "IFNAR1", "IFNAR2", "IRF9", "STAT2", "TYK2", "RARS1" ,"HARS1", "STRAP", "ENY2", "EIF4G2", "TSC1", "VPS25", "STAT1", "CHMP3", "CHMP5", "TSC2", "ISG15", "IRF1", "SEC62", "VPS18", "UBE2S", "ELOB"), gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "black") +
+theme_classic(base_size = 12) +
+labs(title= "") +  xlab(expression(IFN*beta ~ "log2 fold-change")) + ylab(expression(IFN*gamma ~ "log2 fold-change")) +
+geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_colour_viridis_c(transform = "reverse", option = "magma") +
+  scale_size(transform = "reverse", range = c(0.1,3) ) +
+   labs(color = "-log10 p-value", size = "FDR") +
+geom_hline(yintercept = 0, linetype = "dotted")
+plot4
 ```
 
 ```{r}
 #shared res hits
 
+shared_res_B8 <-
 BETA %>%
-  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average > 2 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average > 2) %>%
-  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_neg_log_10_p > 1.301029996 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_neg_log_10_p > 1.301029996) %>%
-  filter(fdr < 0.1)
+  filter(SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_lfc > 1.5 & SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_lfc > 1.5) %>%
+  filter(SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_Pvalue < 0.05 & SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_Pvalue < 0.05)
 
 #shared sens hits
 
+shared_sens_B8 <-
 BETA %>%
-  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average < -2 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average < -2) %>%
-  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_neg_log_10_p > 1.301029996 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_neg_log_10_p > 1.301029996) %>%
-  filter(fdr < 0.1)
+  filter(SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_lfc < -1.5 & SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_lfc < -1.5) %>%
+  filter(SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_Pvalue < 0.05 & SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_Pvalue < 0.05)
 
 #private res hits
 
+beta_res_B8 <-
 BETA %>%
-  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average > 2 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average < 1) %>%
-  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_neg_log_10_p > 1.301029996 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_neg_log_10_p < 1.301029996) %>%
-  filter(fdr < 0.1)
+  filter(SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_lfc > 1.5 & SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_lfc < 1) %>%
+  filter(SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_Pvalue < 0.05 & SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_Pvalue > 0.05) %>%
+  arrange(desc(SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_lfc))
 
+gamma_res_B8 <-
 BETA %>%
-  filter(SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average > 2 & SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average < 1) %>%
-  filter(SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average > 1.301029996 & SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average < 1.301029996) %>%
-  filter(fdr < 0.1)
+  filter(SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_lfc > 1.5 & SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_lfc < 1) %>%
+  filter(SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_Pvalue < 0.05 & SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_Pvalue > 0.05) %>%
+  arrange(desc(SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_lfc))
 
 #private sens hits
 
+beta_sens_B8 <-
 BETA %>%
-  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average < -2 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average > -1) %>%
-  filter(SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_neg_log_10_p > 1.301029996 & SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_neg_log_10_p < 1.301029996) 
+  filter(SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_lfc < -1.5 & SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_lfc > -1) %>%
+  filter(SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_Pvalue < 0.05 & SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_Pvalue > 0.05) %>%
+  arrange(SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_lfc)
 
+gamma_sens_B8 <-
 BETA %>%
-  filter(SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average < -2 & SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average > -1) %>%
-  filter(SKMEL2_wt_IFNg_vs_JAK1C8_IFNg_average_neg_log_10_p > 1.301029996 & SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_neg_log_10_p < 1.301029996) 
+  filter(SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_lfc < -1.5 & SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_lfc > -1) %>%
+  filter(SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_Pvalue < 0.05 & SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_Pvalue > 0.05) %>%
+  arrange(SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_lfc)
 
 ```
 
 ```{r}
+#shared hits from both B8 and C8 JAK1 KO screens averages
+semi_join(beta_res_C8, beta_res_B8) %>% arrange(desc(SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_lfc))
+semi_join(gamma_res_C8, gamma_res_B8) %>% arrange(desc(SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_lfc))
 
+semi_join(beta_sens_C8, beta_sens_B8) %>% arrange(SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_lfc)
+semi_join(gamma_sens_C8, gamma_sens_B8) %>% arrange(SKMEL2_wt_IFNg_vs_JAK1B8_IFNg_average_lfc)
+
+semi_join(shared_res_C8, shared_res_B8) %>% arrange(SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_lfc)
+semi_join(shared_sens_C8, shared_sens_B8) %>% arrange(SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_average_lfc)
+```
+
+```{r}
+HT29_wt_IFNg_vs_ctrl_average
 HT29_GAMMA <- 
   HT29_wt_IFNg_vs_ctrl_average %>% 
   dplyr::rename(gene = id) %>%
@@ -1730,7 +1847,8 @@ HT29_GAMMA <-
     dplyr::rename(HT29_wt_IFNg_vs_ctrl_average_fdr = fdr) %>%
     dplyr::rename(HT29_wt_IFNg_vs_ctrl_average_neg_log_10_p = neg_log_10_p) %>%
     dplyr::rename(HT29_wt_IFNg_vs_ctrl_average_lfc = neg.lfc) %>%
-  select(gene, HT29_wt_IFNg_vs_ctrl_average_lfc, HT29_wt_IFNg_vs_ctrl_average_neg_log_10_p, HT29_wt_IFNg_vs_ctrl_average_fdr)
+      dplyr::rename(HT29_wt_IFNg_vs_ctrl_average_Pvalue = pvalue) %>%
+  select(gene, HT29_wt_IFNg_vs_ctrl_average_lfc, HT29_wt_IFNg_vs_ctrl_average_neg_log_10_p, HT29_wt_IFNg_vs_ctrl_average_fdr, HT29_wt_IFNg_vs_ctrl_average_Pvalue)
 
 A375_GAMMA <- 
   A375_wt_IFNg_vs_ctrl_average %>% 
@@ -1741,7 +1859,8 @@ A375_GAMMA <-
     dplyr::rename(A375_wt_IFNg_vs_ctrl_average_fdr = fdr) %>%
     dplyr::rename(A375_wt_IFNg_vs_ctrl_average_neg_log_10_p = neg_log_10_p) %>%
     dplyr::rename(A375_wt_IFNg_vs_ctrl_average_lfc = neg.lfc) %>%
-  select(gene, A375_wt_IFNg_vs_ctrl_average_lfc, A375_wt_IFNg_vs_ctrl_average_neg_log_10_p, A375_wt_IFNg_vs_ctrl_average_fdr)
+      dplyr::rename(A375_wt_IFNg_vs_ctrl_average_Pvalue = pvalue) %>%
+  select(gene, A375_wt_IFNg_vs_ctrl_average_lfc, A375_wt_IFNg_vs_ctrl_average_neg_log_10_p, A375_wt_IFNg_vs_ctrl_average_fdr, A375_wt_IFNg_vs_ctrl_average_Pvalue)
 
 SKMEL2_GAMMA <- 
   SKMEL2_wt_IFNg_vs_ctrl_average %>% 
@@ -1752,7 +1871,8 @@ SKMEL2_GAMMA <-
     dplyr::rename(SKMEL2_wt_IFNg_vs_ctrl_average_fdr = fdr) %>%
     dplyr::rename(SKMEL2_wt_IFNg_vs_ctrl_average_neg_log_10_p = neg_log_10_p) %>%
     dplyr::rename(SKMEL2_wt_IFNg_vs_ctrl_average_lfc = neg.lfc) %>%
-  select(gene, SKMEL2_wt_IFNg_vs_ctrl_average_lfc, SKMEL2_wt_IFNg_vs_ctrl_average_neg_log_10_p, SKMEL2_wt_IFNg_vs_ctrl_average_fdr)
+      dplyr::rename(SKMEL2_wt_IFNg_vs_ctrl_average_Pvalue = pvalue) %>%
+  select(gene, SKMEL2_wt_IFNg_vs_ctrl_average_lfc, SKMEL2_wt_IFNg_vs_ctrl_average_neg_log_10_p, SKMEL2_wt_IFNg_vs_ctrl_average_fdr, SKMEL2_wt_IFNg_vs_ctrl_average_Pvalue)
 
 GAMMA <- left_join(HT29_GAMMA, A375_GAMMA)
 GAMMA <- left_join(GAMMA, SKMEL2_GAMMA)
@@ -1827,22 +1947,23 @@ plot4
 #A375 and HT29
 #res
 GAMMA %>%
-  filter(HT29_wt_IFNg_vs_ctrl_average_lfc > 1 & HT29_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
-  filter(A375_wt_IFNg_vs_ctrl_average_lfc > 1 & A375_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+  filter(HT29_wt_IFNg_vs_ctrl_average_lfc > 1 & HT29_wt_IFNg_vs_ctrl_average_Pvalue < 0.05) %>%
+  filter(A375_wt_IFNg_vs_ctrl_average_lfc > 1 & A375_wt_IFNg_vs_ctrl_average_Pvalue < 0.05)
+
 #sens
 GAMMA %>%
-  filter(HT29_wt_IFNg_vs_ctrl_average_lfc < -1 & HT29_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
-  filter(A375_wt_IFNg_vs_ctrl_average_lfc < -1 & A375_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+  filter(HT29_wt_IFNg_vs_ctrl_average_lfc < -1 & HT29_wt_IFNg_vs_ctrl_average_Pvalue < 0.05) %>%
+  filter(A375_wt_IFNg_vs_ctrl_average_lfc < -1 & A375_wt_IFNg_vs_ctrl_average_Pvalue < 0.05)
 
 A375_HT29_res <-
   GAMMA %>%
-  filter(HT29_wt_IFNg_vs_ctrl_average_lfc > 1 & HT29_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
-  filter(A375_wt_IFNg_vs_ctrl_average_lfc > 1 & A375_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+  filter(HT29_wt_IFNg_vs_ctrl_average_lfc > 1 & HT29_wt_IFNg_vs_ctrl_average_Pvalue < 0.05) %>%
+  filter(A375_wt_IFNg_vs_ctrl_average_lfc > 1 & A375_wt_IFNg_vs_ctrl_average_Pvalue < 0.05)
 
 A375_HT29_sens <-
   GAMMA %>%
-  filter(HT29_wt_IFNg_vs_ctrl_average_lfc < -1 & HT29_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
-  filter(A375_wt_IFNg_vs_ctrl_average_lfc < -1 & A375_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+  filter(HT29_wt_IFNg_vs_ctrl_average_lfc < -1 & HT29_wt_IFNg_vs_ctrl_average_Pvalue < 0.05) %>%
+  filter(A375_wt_IFNg_vs_ctrl_average_lfc < -1 & A375_wt_IFNg_vs_ctrl_average_Pvalue < 0.05)
 
 ```
 
@@ -1850,72 +1971,72 @@ A375_HT29_sens <-
 #A375 and SKMEL2
 #res
 GAMMA %>%
-  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc > 1 & SKMEL2_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
-  filter(A375_wt_IFNg_vs_ctrl_average_lfc > 1 & A375_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc > 1 & SKMEL2_wt_IFNg_vs_ctrl_average_Pvalue < 0.05) %>%
+  filter(A375_wt_IFNg_vs_ctrl_average_lfc > 1 & A375_wt_IFNg_vs_ctrl_average_Pvalue < 0.05)
 #sens
 GAMMA %>%
-  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc < -1 & SKMEL2_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
-  filter(A375_wt_IFNg_vs_ctrl_average_lfc < -1 & A375_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc < -1 & SKMEL2_wt_IFNg_vs_ctrl_average_Pvalue < 0.05) %>%
+  filter(A375_wt_IFNg_vs_ctrl_average_lfc < -1 & A375_wt_IFNg_vs_ctrl_average_Pvalue < 0.05)
 
 A375_SKMEL2_res <- 
 GAMMA %>%
-  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc > 1 & SKMEL2_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
-  filter(A375_wt_IFNg_vs_ctrl_average_lfc > 1 & A375_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc > 1 & SKMEL2_wt_IFNg_vs_ctrl_average_Pvalue < 0.05) %>%
+  filter(A375_wt_IFNg_vs_ctrl_average_lfc > 1 & A375_wt_IFNg_vs_ctrl_average_Pvalue < 0.05)
 
 A375_SKMEL2_sens <- 
 GAMMA %>%
-  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc < -1 & SKMEL2_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
-  filter(A375_wt_IFNg_vs_ctrl_average_lfc < -1 & A375_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc < -1 & SKMEL2_wt_IFNg_vs_ctrl_average_Pvalue < 0.05) %>%
+  filter(A375_wt_IFNg_vs_ctrl_average_lfc < -1 & A375_wt_IFNg_vs_ctrl_average_Pvalue < 0.05)
 ```
 
 ```{r}
 #HT29 and SKMEL2
 #res
 GAMMA %>%
-  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc > 1 & SKMEL2_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
-  filter(HT29_wt_IFNg_vs_ctrl_average_lfc > 1 & HT29_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc > 1 & SKMEL2_wt_IFNg_vs_ctrl_average_Pvalue < 0.05) %>%
+  filter(HT29_wt_IFNg_vs_ctrl_average_lfc > 1 & HT29_wt_IFNg_vs_ctrl_average_Pvalue < 0.05)
 
 #sens
 GAMMA %>%
-  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc < -1 & SKMEL2_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
-  filter(HT29_wt_IFNg_vs_ctrl_average_lfc < -1 & HT29_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc < -1 & SKMEL2_wt_IFNg_vs_ctrl_average_Pvalue < 0.05) %>%
+  filter(HT29_wt_IFNg_vs_ctrl_average_lfc < -1 & HT29_wt_IFNg_vs_ctrl_average_Pvalue < 0.05)
 
 HT29_SKMEL2_res <-
 GAMMA %>%
-  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc > 1 & SKMEL2_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
-  filter(HT29_wt_IFNg_vs_ctrl_average_lfc > 1 & HT29_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc > 1 & SKMEL2_wt_IFNg_vs_ctrl_average_Pvalue < 0.05) %>%
+  filter(HT29_wt_IFNg_vs_ctrl_average_lfc > 1 & HT29_wt_IFNg_vs_ctrl_average_Pvalue < 0.05)
 
 HT29_SKMEL2_sens <-
 GAMMA %>%
-  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc < -1 & SKMEL2_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
-  filter(HT29_wt_IFNg_vs_ctrl_average_lfc < -1 & HT29_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc < -1 & SKMEL2_wt_IFNg_vs_ctrl_average_Pvalue < 0.05) %>%
+  filter(HT29_wt_IFNg_vs_ctrl_average_lfc < -1 & HT29_wt_IFNg_vs_ctrl_average_Pvalue < 0.05)
 ```
 
 ```{r}
 #A375 and HT29 and SKMEL2
 #res
 GAMMA %>%
-  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc > 1 & SKMEL2_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
-  filter(HT29_wt_IFNg_vs_ctrl_average_lfc > 1 & HT29_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
-  filter(A375_wt_IFNg_vs_ctrl_average_lfc > 1 & A375_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc > 1 & SKMEL2_wt_IFNg_vs_ctrl_average_Pvalue < 0.05) %>%
+  filter(HT29_wt_IFNg_vs_ctrl_average_lfc > 1 & HT29_wt_IFNg_vs_ctrl_average_Pvalue < 0.05) %>%
+  filter(A375_wt_IFNg_vs_ctrl_average_lfc > 1 & A375_wt_IFNg_vs_ctrl_average_Pvalue < 0.05)
 
 #sens
 GAMMA %>%
-  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc < -1 & SKMEL2_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
-  filter(HT29_wt_IFNg_vs_ctrl_average_lfc < -1 & HT29_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
-  filter(A375_wt_IFNg_vs_ctrl_average_lfc < -1 & A375_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc < -1 & SKMEL2_wt_IFNg_vs_ctrl_average_Pvalue < 0.05) %>%
+  filter(HT29_wt_IFNg_vs_ctrl_average_lfc < -1 & HT29_wt_IFNg_vs_ctrl_average_Pvalue < 0.05) %>%
+  filter(A375_wt_IFNg_vs_ctrl_average_lfc < -1 & A375_wt_IFNg_vs_ctrl_average_Pvalue < 0.05)
 
 A375_SKMEL2_HT29_res <-
 GAMMA %>%
-  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc > 1 & SKMEL2_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
-  filter(HT29_wt_IFNg_vs_ctrl_average_lfc > 1 & HT29_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
-  filter(A375_wt_IFNg_vs_ctrl_average_lfc > 1 & A375_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc > 1 & SKMEL2_wt_IFNg_vs_ctrl_average_Pvalue < 0.05) %>%
+  filter(HT29_wt_IFNg_vs_ctrl_average_lfc > 1 & HT29_wt_IFNg_vs_ctrl_average_Pvalue < 0.05) %>%
+  filter(A375_wt_IFNg_vs_ctrl_average_lfc > 1 & A375_wt_IFNg_vs_ctrl_average_Pvalue < 0.05)
 
 A375_SKMEL2_HT29_sens <-
 GAMMA %>%
-  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc < -1 & SKMEL2_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
-  filter(HT29_wt_IFNg_vs_ctrl_average_lfc < -1 & HT29_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996) %>%
-  filter(A375_wt_IFNg_vs_ctrl_average_lfc < -1 & A375_wt_IFNg_vs_ctrl_average_neg_log_10_p > 1.301029996)
+  filter(SKMEL2_wt_IFNg_vs_ctrl_average_lfc < -1 & SKMEL2_wt_IFNg_vs_ctrl_average_Pvalue < 0.05) %>%
+  filter(HT29_wt_IFNg_vs_ctrl_average_lfc < -1 & HT29_wt_IFNg_vs_ctrl_average_Pvalue < 0.05) %>%
+  filter(A375_wt_IFNg_vs_ctrl_average_lfc < -1 & A375_wt_IFNg_vs_ctrl_average_Pvalue < 0.05)
 ```
 
 
@@ -1927,10 +2048,10 @@ HT29_SKMEL2_res
 
 A375_SKMEL2_HT29_res
 
-semi_join(A375_SKMEL2_res, A375_HT29_res)
-semi_join(HT29_SKMEL2_res, A375_HT29_res)
+anti_join(A375_HT29_res, A375_SKMEL2_HT29_res)
+anti_join(A375_SKMEL2_res, A375_SKMEL2_HT29_res)
+anti_join(HT29_SKMEL2_res, A375_SKMEL2_HT29_res)
 
-semi_join(A375_SKMEL2_res, A375_SKMEL2_HT29_res)
 
 #Venn Diagram - cell line sensitivity to IFNg
 
@@ -1939,6 +2060,10 @@ A375_SKMEL2_sens
 HT29_SKMEL2_sens
 
 A375_SKMEL2_HT29_sens
+
+anti_join(A375_HT29_sens, A375_SKMEL2_HT29_sens)
+anti_join(A375_SKMEL2_sens, A375_SKMEL2_HT29_sens)
+anti_join(HT29_SKMEL2_sens, A375_SKMEL2_HT29_sens)
 
 ```
 
@@ -2037,7 +2162,7 @@ plot2
 ```
 
 ```{r}
-# gRNA perfromance
+# gRNA performance
 # replicate correlation
 # common hits between WT and the KOs 
 ```
@@ -2107,67 +2232,91 @@ IFNg_average_gRNA
 ```
 
 ```{r}
-# IFNg -volcano plot
+# IFNg -HT29 rug plot
 
 HT29_IFNG<-
   IFNg_average_gRNA %>%
   filter(sample %in% c("HT29_wt_IFNg_vs_JAK1c1_IFNg_average_gRNA",
 "HT29_wt_IFNg_vs_JAK1c3_IFNg_average_gRNA",
-"HT29_wt_IFNg_vs_JAK2A11_IFNg_average_gRNA",
-"HT29_wt_IFNg_vs_JAK2F4_IFNg_average_gRNA",
 "HT29_wt_IFNg_vs_ctrl_average_gRNA"))
 
 plot1 <- ggplot(IFNg_average_gRNA, aes(x=LFC)) +
 theme_classic() +
-labs(title= "HT29 gRNAs IFNg vs Control \nCRISPR/Cas9 KO IO") +
+labs(title= "HT29 CRISPR/Cas9 KO - MAP3K7 gRNAs") +
 geom_vline(xintercept=c(0,0),linetype="dotted") +
 geom_rug(colour = if_else(IFNg_average_gRNA$Gene %in% c("MAP3K7"), "red", "grey85"), alpha = if_else(IFNg_average_gRNA$Gene %in% c("MAP3K7"), 2, 0.01), length = unit(1, "npc")) +
 ylim(0, 0.1) +
-xlim(-5, 5) +
+xlim(-6,6) +
 theme(axis.title.y=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.y=element_blank()) +
-  facet_wrap(~sample)
+  facet_wrap(~sample, ncol = 3)
 plot1
 
 plot2 <- ggplot(IFNg_average_gRNA, aes(x=LFC)) +
 theme_classic() +
-labs(title= "HT29 gRNAs IFNg vs Control \nCRISPR/Cas9 KO IO") +
+labs(title= "HT29 CRISPR/Cas9 KO - CHD1 gRNAs") +
 geom_vline(xintercept=c(0,0),linetype="dotted") +
 geom_rug(colour = if_else(IFNg_average_gRNA$Gene %in% c("CHD1"), "red", "grey85"), alpha = if_else(IFNg_average_gRNA$Gene %in% c("CHD1"), 2, 0.01), length = unit(1, "npc")) +
 ylim(0, 0.1) +
-xlim(-5, 5) +
+xlim(-6,6) +
 theme(axis.title.y=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.y=element_blank()) +
-  facet_wrap(~sample)
+  facet_wrap(~sample, ncol =3)
 plot2
 
 plot3 <- ggplot(HT29_IFNG, aes(x=LFC)) +
 theme_classic() +
-labs(title= "HT29 gRNAs IFNg vs Control \nCRISPR/Cas9 KO IO") +
+labs(title= "HT29 CRISPR/Cas9 KO - MAP3K7 gRNAs") +
 geom_vline(xintercept=c(0,0),linetype="dotted") +
 geom_rug(colour = if_else(HT29_IFNG$Gene %in% c("MAP3K7"), "red", "grey85"), alpha = if_else(HT29_IFNG$Gene %in% c("MAP3K7"), 2, 0.01), length = unit(1, "npc")) +
 ylim(0, 0.1) +
-xlim(-5, 5) +
+  xlim(-6,6) +
 theme(axis.title.y=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.y=element_blank()) +
-  facet_wrap(~sample)
+  facet_wrap(~sample, ncol=3)
 plot3
 
 plot4 <- ggplot(HT29_IFNG, aes(x=LFC)) +
 theme_classic() +
-labs(title= "HT29 gRNAs IFNg vs Control \nCRISPR/Cas9 KO IO") +
+labs(title= "HT29 CRISPR/Cas9 KO - CHD1 gRNAs") +
 geom_vline(xintercept=c(0,0),linetype="dotted") +
 geom_rug(colour = if_else(HT29_IFNG$Gene %in% c("CHD1"), "red", "grey85"), alpha = if_else(HT29_IFNG$Gene %in% c("CHD1"), 2, 0.01), length = unit(1, "npc")) +
 ylim(0, 0.1) +
-xlim(-5, 5) +
+xlim(-6,6) +
 theme(axis.title.y=element_blank(),
         axis.text.y=element_blank(),
         axis.ticks.y=element_blank()) +
-  facet_wrap(~sample)
+  facet_wrap(~sample, ncol=3)
 plot4
+
+plot5 <- ggplot(HT29_IFNG, aes(x=LFC)) +
+theme_classic() +
+labs(title= "HT29 CRISPR/Cas9 KO - SOCS1 gRNAs") +
+geom_vline(xintercept=c(0,0),linetype="dotted") +
+geom_rug(colour = if_else(HT29_IFNG$Gene %in% c("SOCS1"), "red", "grey85"), alpha = if_else(HT29_IFNG$Gene %in% c("SOCS1"), 2, 0.01), length = unit(1, "npc")) +
+ylim(0, 0.1) +
+  xlim(-6,6) +
+theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank()) +
+  facet_wrap(~sample, ncol=3)
+plot5
+
+plot6 <- ggplot(HT29_IFNG, aes(x=LFC)) +
+theme_classic() +
+labs(title= "HT29 CRISPR/Cas9 KO - Control gRNAs") +
+geom_vline(xintercept=c(0,0),linetype="dotted") +
+geom_rug(colour = if_else(str_detect(HT29_IFNG$Gene,"CTRL"), "black", "grey85"), alpha = if_else(str_detect(HT29_IFNG$Gene,"CTRL"), 2, 0.01), length = unit(1, "npc")) +
+ylim(0, 0.1) +
+  xlim(-6,6) +
+theme(axis.title.y=element_blank(),
+        axis.text.y=element_blank(),
+        axis.ticks.y=element_blank()) +
+  facet_wrap(~sample, ncol =3)
+plot6
 
 HT29_IFNG %>%
   filter(Gene == "MAP3K7") %>%
@@ -2176,12 +2325,22 @@ HT29_IFNG %>%
 HT29_IFNG %>%
   filter(Gene == "CHD1") %>%
   filter(sample == "HT29_wt_IFNg_vs_ctrl_average_gRNA")
+
+HT29_IFNG %>%
+  filter(Gene == "SOCS1") %>%
+  filter(sample == "HT29_wt_IFNg_vs_ctrl_average_gRNA")
+
+HT29_IFNG %>%
+  filter(str_detect(Gene,"CTRL")) %>%
+  filter(sample == "HT29_wt_IFNg_vs_ctrl_average_gRNA")
+
+HT29_IFNG
 ```
 
 ```{r}
 #organoid data CRISPR screens MAGeCK
-ORG_screens <- as_tibble(read.csv("ORG_MAGeCK_GP_060125.csv", stringsAsFactors = FALSE, header = TRUE))
-ORG_screens_average <- as_tibble(read.csv("ORG_MAGeCK_GP_average_060125.csv", stringsAsFactors = FALSE, header = TRUE))
+ORG_screens <- as_tibble(read.csv("ORG_MAGeCK_GP_250225.csv", stringsAsFactors = FALSE, header = TRUE))
+ORG_screens_average <- as_tibble(read.csv("ORG_MAGeCK_GP_average_250225.csv", stringsAsFactors = FALSE, header = TRUE))
 
 ORG_screens
 ORG_screens_average
@@ -2258,9 +2417,9 @@ geom_hline(yintercept = 0, linetype = "dotted")
 plot5
 
 # rep A vs B IFNg low
-plot6 <- ggplot(ORG_screens, aes(x=ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_lfc, y= ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_B_lfc, colour = ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_neglog10Pval)) +
+plot6 <- ggplot(ORG_screens, aes(x=ITO66T_Ctrl_IFNγ_Hi_vs_ITO66T_IFNγ_Lo_A_lfc, y= ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_B_lfc, colour = ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_neglog10Pval)) +
 geom_pointdensity(position = pos, shape = 16) +
-geom_text_repel(aes(label=ifelse(ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_lfc >1.85 & ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_B_lfc >1.85 | ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_lfc < -2.3 & ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_B_lfc < -2.3 | gene %in% c("CHD1", "MAP3K7", "CDX2"), gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "black") +
+geom_text_repel(aes(label=ifelse(ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_lfc >1.85 & ITO66T_Ctrl_IFNγ_Hi_vs_ITO66T_IFNγ_Lo_B_lfc >1.85 | ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_lfc < -2.3 & ITO66T_Ctrl_IFNγ_Hi_vs_ITO66T_IFNγ_Lo_B_lfc < -2.3 | gene %in% c("CHD1", "MAP3K7", "CDX2"), gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "black") +
 theme_classic(base_size = 12) +
 labs(title= "") +  xlab("IFN-γ versus Control - Rep. A \n (log2 fold-change)") + ylab("IFN-γ versus Control - Rep. B \n (log2 fold-change)") +
 geom_vline(xintercept = 0, linetype = "dotted") +
@@ -2282,9 +2441,9 @@ geom_hline(yintercept = 0, linetype = "dotted")
 plot7
 
 # TNFa vs IFNg
-plot8 <- ggplot(ORG_screens, aes(x=ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc, y= ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc, colour = ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_neglog10Pval)) +
+plot8 <- ggplot(ORG_screens, aes(x=ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc, y= ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc, colour = ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_neglog10Pval)) +
 geom_pointdensity(position = pos, shape = 16) +
-geom_text_repel(aes(label=ifelse(ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc > 5 | ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc > 4 | ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc < -5 | ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc < -3 | gene %in% c("CHD1", "JAK1", "JAK2", "IFNGR1", "IFNGR2", "MAP3K7", "CDX2", "CHD2", "CDX1", "TNFRSF1A"), gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "black") +
+geom_text_repel(aes(label=ifelse(ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc > 5 | ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc > 4 | ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc < -5 | ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc < -3 | gene %in% c("CHD1", "JAK1", "JAK2", "IFNGR1", "IFNGR2", "MAP3K7", "CDX2", "CHD2", "CDX1", "TNFRSF1A"), gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "black") +
 theme_classic(base_size = 12) +
 labs(title= "") +  xlab("TNF-a versus Control - average \n (log2 fold-change)") + ylab("IFNg versus Control - average \n (log2 fold-change)") +
 geom_vline(xintercept = 0, linetype = "dotted") +
@@ -2306,9 +2465,9 @@ geom_hline(yintercept = 0, linetype = "dotted")
 plot9
 
 # IFNg vs T cells
-plot10 <- ggplot(ORG_screens, aes(x=ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc, y= ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc, colour = ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_neglog10Pval)) +
+plot10 <- ggplot(ORG_screens, aes(x=ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc, y= ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc, colour = ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_neglog10Pval)) +
 geom_pointdensity(position = pos, shape = 16) +
-geom_text_repel(aes(label=ifelse(ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc > 2.5 | ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc > 4 | ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc < -3.5 | ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc < -5 | gene %in% c("CHD1", "JAK1", "JAK2", "IFNGR1", "IFNGR2", "MAP3K7", "CDX2", "CHD2", "CDX1", "TNFRSF1A"), gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "black") +
+geom_text_repel(aes(label=ifelse(ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc > 2.5 | ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc > 4 | ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc < -3.5 | ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc < -5 | gene %in% c("CHD1", "JAK1", "JAK2", "IFNGR1", "IFNGR2", "MAP3K7", "CDX2", "CHD2", "CDX1", "TNFRSF1A"), gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "black") +
 theme_classic(base_size = 12) +
 labs(title= "") +  xlab("IFN-g versus Control - average \n (log2 fold-change)") + ylab("T cells versus Control - average \n (log2 fold-change)") +
 geom_vline(xintercept = 0, linetype = "dotted") +
@@ -2324,13 +2483,12 @@ ORG_screens
 
 ORG_screens_2 <-
 ORG_screens %>% 
-  mutate(Cytokine_hit = ifelse(ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc > 0.5 & ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_Pval < 0.05 & ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_fdr < 0.25, "IFNg_res", ifelse(ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc < -0.5 & ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_Pval < 0.01 & ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_fdr < 0.25, "IFNg_sens", ifelse(ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc > 0.5 & ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_Pval < 0.05 & ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_fdr< 0.25, "TNFa_res", ifelse(ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc < -0.5 & ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_Pval < 0.05 & ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_Pval < 0.25, "TNFa_sens", NA))))) %>%
-  mutate(Cytokine_hit = ifelse(ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc > 0.5 & ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc > 0.5 & ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_fdr < 0.25 & ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_Pval < 0.05 & ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_Pval < 0.05 & ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_fdr < 0.25, "res_both", ifelse(ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc < -0.5 & ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc < -0.5 & ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_fdr < 0.25 & ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_Pval < 0.05 & ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_Pval < 0.05 & ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_fdr < 0.25, "sens_both", Cytokine_hit)))
+  mutate(Cytokine_hit = ifelse(ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc > 0.5 & ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_Pval < 0.05 & ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_fdr < 0.2, "IFNg_res", ifelse(ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc < -0.5 & ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_Pval < 0.01 & ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_fdr < 0.2, "IFNg_sens", ifelse(ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc > 0.5 & ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_Pval < 0.05 & ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_fdr< 0.2, "TNFa_res", ifelse(ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc < -0.5 & ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_Pval < 0.05 & ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_Pval < 0.2, "TNFa_sens", NA))))) %>%
+  mutate(Cytokine_hit = ifelse(ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc > 0.5 & ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc > 0.5 & ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_fdr < 0.2 & ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_Pval < 0.05 & ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_Pval < 0.05 & ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_fdr < 0.2, "res_both", ifelse(ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc < -0.5 & ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc < -0.5 & ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_fdr < 0.2 & ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_Pval < 0.05 & ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_Pval < 0.05 & ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_fdr < 0.2, "sens_both", Cytokine_hit)))
 
-# check categories for cytokine screens organoid cytokine screens hit annotations
-
+# check categories for organoid cytokine screens hit annotations
 ORG_screens_2 %>%
-  count(Cytokine_hit)
+  dplyr::count(Cytokine_hit)
 
 ORG_screens_2 %>% 
   filter(Cytokine_hit == "res_both")
@@ -2340,15 +2498,19 @@ ORG_screens_2 %>%
 
 #hits from org screens
 ORG_screens_2 %>%
-  select(gene, ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc, ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_Pval, ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_fdr, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_Pval, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_fdr, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_fdr, 
+  select(gene, ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc, ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_Pval, ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_fdr, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_Pval, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_fdr, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_fdr, 
          ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_lfc, ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_Pval, ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_fdr, ITO66T_Ctrl_TCells_A_vs_ITO66T_TCells_A_lfc, ITO66T_Ctrl_TCells_A_vs_ITO66T_TCells_A_Pval, ITO66T_Ctrl_TCells_A_vs_ITO66T_TCells_A_fdr, ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_lfc, ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_Pval, ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_fdr, ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_lfc, ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_Pval, ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_fdr, Cytokine_hit) %>%
-  filter(ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc > 0.5 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval < 0.05 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_fdr < 0.25 | ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc < -0.5 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval < 0.05 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_fdr < 0.25 | is.na(Cytokine_hit) == FALSE)  %>%
+  filter(ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc > 0.5 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval < 0.05 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_fdr < 0.2 | ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc < -0.5 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval < 0.05 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_fdr < 0.2 | is.na(Cytokine_hit) == FALSE)  %>%
   write.csv("ORG_screens.csv")
 
 # check status of hits in the T cell screens and proposed antigens
 ORG_screens_2 %>%
-  select(gene, Cytokine_hit, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_Pval, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc, ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_lfc, ITO66T_Ctrl_TCells_A_vs_ITO66T_TCells_A_lfc, ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_lfc, ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_lfc,ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval, ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc, ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_Pval, ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_Pval, ITO66T_Ctrl_TCells_A_vs_ITO66T_TCells_A_Pval, ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_Pval, ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_Pval) %>%
+  select(gene, Cytokine_hit, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_Pval, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc, ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_lfc, ITO66T_Ctrl_TCells_A_vs_ITO66T_TCells_A_lfc, ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_lfc, ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_lfc,ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval, ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc, ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_Pval, ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_Pval, ITO66T_Ctrl_TCells_A_vs_ITO66T_TCells_A_Pval, ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_Pval, ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_Pval) %>%
   filter(gene %in% c("MAP3K7","CHD1", "CDX2", "CHD2", "EEF1A1", "ABT1", "CHUK", "VPS18", "TNFSF1B"))
+
+ORG_screens_2 %>%
+  filter(Cytokine_hit == "TNFa_sens") %>%
+  arrange(ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc)
 ```
 
 ```{r}
@@ -2372,7 +2534,7 @@ labs(title= "") +  xlab("Control versus T-cells (log2 fold-change) \nFirst expos
 geom_vline(xintercept = 0, linetype = "dotted") +
    labs(color = "Organoid cytokine screen hit") +
   scale_colour_manual(values=c("royalblue1","salmon", "blue4", "red3", "orange", "black"), na.value="grey50") +
-  geom_text_repel(aes(label=ifelse(gene %in% c("CHD1", "JAK1", "JAK2", "IFNGR1", "IFNGR2", "MAP3K7", "CHUK", "TNFRSF1A", "TNFRSF1B", "ABT1", "VPS18", "CASP8", "COX7A1", "IRF1", "TAP1", "TAP2", "GRHL2"), gene, "")), size=3, position=pos, max.overlaps = Inf) +
+  geom_text_repel(aes(label=ifelse(gene %in% c("CHD1", "JAK1", "JAK2", "IFNGR1", "IFNGR2", "MAP3K7", "CHUK", "TNFRSF1A", "TNFRSF1B", "ABT1", "VPS18", "CASP8", "COX7A1", "IRF1", "TAP1", "TAP2", "GRHL2", "HLA-B"), gene, "")), size=3, position=pos, max.overlaps = Inf) +
 geom_hline(yintercept = 0, linetype = "dotted")
 plot5
 
@@ -2426,7 +2588,7 @@ gene_sets_satija %>%
   colnames()
 
 gene_sets_satija %>%
-  count()
+  dplyr::count()
 
 intersect(gene_sets_satija$IFNG_up_HT29_IFNGR1..IFNGR2..JAK1..JAK2..STAT1, gene_sets_satija$TNFA_up_HT29_CHUK..IKBKG..MAP3K7..NFKBIA..TNFRSF1A)
 intersect(gene_sets_satija$IFNG_down_HT29_IFNGR1..IFNGR2..JAK1..JAK2..STAT1, gene_sets_satija$TNFA_down_HT29_CHUK..IKBKG..MAP3K7..NFKBIA..TNFRSF1A)
@@ -2438,13 +2600,13 @@ intersect(gene_sets_satija$IFNG_down_HT29_IFNGR1..IFNGR2..JAK1..JAK2..STAT1, gen
 #all hits for ORG average screen with LFC ><0.5 and P val < 0.05
 ORG_hits <- 
   ORG_screens_2 %>%
-  select(gene, ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc, ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_Pval, ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_fdr, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_Pval, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_fdr, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_fdr, 
+  select(gene, ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc, ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_Pval, ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_fdr, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_Pval, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_fdr, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_fdr, 
          ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_lfc, ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_Pval, ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_fdr, ITO66T_Ctrl_TCells_A_vs_ITO66T_TCells_A_lfc, ITO66T_Ctrl_TCells_A_vs_ITO66T_TCells_A_Pval, ITO66T_Ctrl_TCells_A_vs_ITO66T_TCells_A_fdr, ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_lfc, ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_Pval, ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_fdr, ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_lfc, ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_Pval, ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_fdr, Cytokine_hit) %>%
-  filter(ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc > 0.5 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval < 0.05 | ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc < -0.5 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval < 0.05 | is.na(Cytokine_hit) == FALSE)
+  filter(ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc > 0.5 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval < 0.05 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_fdr < 0.2 | ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc < -0.5 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval < 0.05 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_fdr < 0.2 | is.na(Cytokine_hit) == FALSE)
 
 #enumerate cytokine hits as a proportion of ORG hits
 ORG_hits %>%
-  count(Cytokine_hit)
+  dplyr::count(Cytokine_hit)
 
 #all hits for ORG average screen with LFC ><0.5 and P val < 0.05 and IFNg hit
 #RESISTANCE
@@ -2452,7 +2614,7 @@ ORG_hits %>%
 ORG_hits %>%
   filter(ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc > 0.5 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval < 0.05) %>%
   filter(Cytokine_hit == "IFNg_res") %>%
-  arrange(desc(ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc))
+  arrange(desc(ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc))
 
 #TNFa
 ORG_hits %>%
@@ -2471,7 +2633,7 @@ ORG_hits %>%
 ORG_hits %>%
   filter(ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc < -0.5 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval < 0.05) %>%
   filter(Cytokine_hit == "IFNg_sens") %>%
-  arrange(ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc)
+  arrange(ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc)
 
 #TNFa
 ORG_hits %>%
@@ -2489,31 +2651,30 @@ ORG_hits %>%
 ORG_screens_2 %>%
     filter(Cytokine_hit == "res_both") %>%
   filter(ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc < 0.5 | ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval > 0.05) %>%
-    arrange(desc(ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc)) %>%
-   select(gene, Cytokine_hit, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc, ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc)
+    arrange(desc(ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc)) %>%
+   select(gene, Cytokine_hit, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc, ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc)
 
 #not T cells but dual sensitive
 ORG_screens_2 %>%
     filter(Cytokine_hit == "sens_both") %>%
   filter(ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc > -0.5 | ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval > 0.05) %>%
-  arrange(ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc) %>%
-   select(gene, Cytokine_hit, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc, ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc)
+  arrange(ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc) %>%
+   select(gene, Cytokine_hit, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc, ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc)
 
 
 #T cells only - res
 ORG_screens_2 %>%
     filter(is.na(Cytokine_hit)) %>%
-  filter(ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc > 0.5 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval < 0.05) %>%
+  filter(ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc > 0.5 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval < 0.05 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_fdr < 0.2) %>%
     arrange(desc(ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc)) %>%
-   select(gene, Cytokine_hit, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_fdr, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval, ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc)
+   select(gene, Cytokine_hit, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_fdr, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval, ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc)
   
 #T cells only - sens
 ORG_screens_2 %>%
     filter(is.na(Cytokine_hit)) %>%
-  filter(ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc < -0.5 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval < 0.05 & ITO66T_Ctrl_TCells_A_vs_ITO66T_TCells_A_lfc < -0.5 & ITO66T_Ctrl_TCells_B_vs_ITO66T_TCells_B_lfc < -0.5 & ITO66T_Ctrl_TCells_A1_vs_ITO66T_TCells_A1_lfc < -0.5 & ITO66T_Ctrl_TCells_B1_vs_ITO66T_TCells_B1_lfc < -0.5) %>%
+  filter(ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc < -0.5 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval < 0.05 & ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_fdr < 0.2) %>%
     arrange(ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc) %>%
-   select(gene, Cytokine_hit, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_fdr, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval, ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc)
-
+   select(gene, Cytokine_hit, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_lfc, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_fdr, ITO66T_Ctrl_TCells_A_B_vs_ITO66T_TCells_A_B_Pval, ITO66T_Ctrl_IFNγ_Hi_Lo_vs_ITO66T_IFNγ_Lo_A_B_lfc, ITO66T_CTRL_TNFa_A_B_vs_ITO66T_TNFa_A_B_lfc)
 
 ```
 
@@ -2578,15 +2739,15 @@ r3
 
 #ORGS IFNg 
 rep1 <- ORG_screens_2 %>%
-  select(gene, ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_lfc)
+  select(gene, ITO66T_Ctrl_IFNγ_Hi_vs_ITO66T_IFNγ_Lo_A_lfc)
 
 rep2 <- ORG_screens_2 %>%
   select(gene, ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_B_lfc)
 
 rep_correlation <- left_join(rep1, rep2) %>% 
-  filter(is.na(ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_lfc) ==FALSE & is.na(ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_B_lfc)==FALSE )
+  filter(is.na(ITO66T_Ctrl_IFNγ_Hi_vs_ITO66T_IFNγ_Lo_A_lfc) ==FALSE & is.na(ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_B_lfc)==FALSE )
 
-r4 <- cor(rep_correlation$ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_A_lfc, rep_correlation$ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_B_lfc, method = "pearson")
+r4 <- cor(rep_correlation$ITO66T_Ctrl_IFNγ_Hi_vs_ITO66T_IFNγ_Lo_A_lfc, rep_correlation$ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_B_lfc, method = "pearson")
 
 r4
 
@@ -2604,3 +2765,291 @@ r5 <- cor(rep_correlation$ITO66T_CTRL_TNFa_A_vs_ITO66T_TNFa_A_lfc, rep_correlati
 
 r5
 ```
+
+```{r}
+# write Supplementary Table 1
+
+ctrl_average_2 <-
+  ctrl_average %>% 
+  select(!c(neg.p.value, neg.fdr, pos.p.value, pos.fdr, pos.lfc, legend)) %>%
+  dplyr::rename(lfc = neg.lfc)
+  
+IFNg_average_2 <-
+  IFNg_average %>% 
+  select(!c(neg.p.value, neg.fdr, pos.p.value, pos.fdr, pos.lfc, legend)) %>%
+  dplyr::rename(lfc = neg.lfc)
+
+IFNb_average_2 <- 
+  IFNb_average %>% 
+  select(!c(neg.p.value, neg.fdr, pos.p.value, pos.fdr, pos.lfc, legend)) %>%
+  dplyr::rename(lfc = neg.lfc)
+
+IL6_average_2 <- 
+  IL6_average %>% 
+  select(!c(neg.p.value, neg.fdr, pos.p.value, pos.fdr, pos.lfc, legend)) %>%
+  dplyr::rename(lfc = neg.lfc) 
+```
+
+```{r}
+#reshape the tables
+
+# Reshape the data
+IFNg_average_reshaped <- 
+  IFNg_average_2 %>%
+  pivot_longer(
+    cols = -c(sample, gene), # Capture all columns except Sample_Name and Gene
+    names_to = "Measurement",    # Name for the measurement type (e.g., Value1, Value2)
+    values_to = "Value"          # Name for the value column
+  ) %>%
+  mutate(
+    Column_Name = paste(sample, Measurement, sep = "_") # Combine Sample and Measurement
+  ) %>%
+  select(-sample, -Measurement) %>% # Drop unnecessary intermediate columns
+  pivot_wider(
+    names_from = Column_Name,    # Create new columns using combined names
+    values_from = Value          # Populate the new columns with values
+  )
+
+ctrl_average_reshaped <- 
+  ctrl_average_2 %>%
+  pivot_longer(
+    cols = -c(sample, gene), # Capture all columns except Sample_Name and Gene
+    names_to = "Measurement",    # Name for the measurement type (e.g., Value1, Value2)
+    values_to = "Value"          # Name for the value column
+  ) %>%
+  mutate(
+    Column_Name = paste(sample, Measurement, sep = "_") # Combine Sample and Measurement
+  ) %>%
+  select(-sample, -Measurement) %>% # Drop unnecessary intermediate columns
+  pivot_wider(
+    names_from = Column_Name,    # Create new columns using combined names
+    values_from = Value          # Populate the new columns with values
+  )
+
+IFNb_average_reshaped <- 
+  IFNb_average_2 %>%
+  pivot_longer(
+    cols = -c(sample, gene), # Capture all columns except Sample_Name and Gene
+    names_to = "Measurement",    # Name for the measurement type (e.g., Value1, Value2)
+    values_to = "Value"          # Name for the value column
+  ) %>%
+  mutate(
+    Column_Name = paste(sample, Measurement, sep = "_") # Combine Sample and Measurement
+  ) %>%
+  select(-sample, -Measurement) %>% # Drop unnecessary intermediate columns
+  pivot_wider(
+    names_from = Column_Name,    # Create new columns using combined names
+    values_from = Value          # Populate the new columns with values
+  )
+
+IL6_average_reshaped <- 
+  IL6_average_2 %>%
+  pivot_longer(
+    cols = -c(sample, gene), # Capture all columns except Sample_Name and Gene
+    names_to = "Measurement",    # Name for the measurement type (e.g., Value1, Value2)
+    values_to = "Value"          # Name for the value column
+  ) %>%
+  mutate(
+    Column_Name = paste(sample, Measurement, sep = "_") # Combine Sample and Measurement
+  ) %>%
+  select(-sample, -Measurement) %>% # Drop unnecessary intermediate columns
+  pivot_wider(
+    names_from = Column_Name,    # Create new columns using combined names
+    values_from = Value          # Populate the new columns with values
+  )
+```
+
+```{r}
+# write Supplementary Table 1
+
+ctrl_average_reshaped
+IFNg_average_reshaped
+IL6_average_reshaped
+IFNb_average_reshaped
+
+ORG_screens %>% colnames()
+
+Supplementary_Table1 <-
+  left_join(ctrl_average_reshaped, IFNg_average_reshaped)
+
+Supplementary_Table1 <-
+  left_join(Supplementary_Table1, IL6_average_reshaped)
+
+Supplementary_Table1 <-
+  left_join(Supplementary_Table1, IFNb_average_reshaped)
+
+Supplementary_Table1 
+
+Supplementary_Table1 %>%
+    select(contains("_lfc"))
+
+Supplementary_Table1 
+
+CRC9_screens <- 
+  ORG_screens %>%
+    select(contains(c("ITO66T","gene")))
+
+CRC9_screens
+
+Supplementary_Table1 <-
+  left_join(Supplementary_Table1, CRC9_screens)
+
+Supplementary_Table1 
+
+#filter to interesting comparisons
+
+filtered <- (Supplementary_Table1)[sapply(colnames(Supplementary_Table1), function(x) {
+  sum(gregexpr("JAK", x, ignore.case = TRUE)[[1]] > 0) < 2
+})] %>%
+  select(-contains(c("num", "goodsgrna", "plasmid")))
+
+# Rename columns in Supplementary_Table1
+colnames(filtered) <- str_replace_all(colnames(filtered), "ITO66T", "CRC_9")
+  
+ colnames(filtered) <- str_replace_all(colnames(filtered), "γ", "g")
+```
+
+```{r}
+#remove Hi IFNg condition
+# write Supplementary Table 1
+filtered <-
+  filtered %>% 
+  select(-contains("CRC_9_Ctrl_IFNg_Hi_vs_CRC_9_IFNg_Hi"))
+
+filtered <-
+  filtered %>% 
+  select(-contains("CRC_9_Ctrl_IFNg_Hi_vs_CRC_9_IFNg_Lo_B_"))
+
+filtered <-
+  filtered %>% 
+  select(-contains("CRC_9_Ctrl_IFNg_Lo_vs_CRC_9_IFNg_Lo_A_"))
+
+filtered <-
+  filtered %>% 
+  select(-contains("CRC_9_Ctrl_IFNg_Lo_vs_CRC_9_IFNg_Lo_A_B_"))
+
+#ITO66T_Ctrl_IFNγ_Hi_vs_ITO66T_IFNγ_Lo_A_lfc, y= ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_B_lfc
+
+filtered %>%
+  write.csv("Supplementary_Table_1.csv")
+```
+
+```{r}
+#further filter the table to interesting comparisons for heatmaps
+
+filtered_2 <-
+  filtered %>%
+  # Select columns containing "IFN", "gene", or "TNF"
+  select(matches("IFN|gene|TNF|TCells|IL6")) %>%
+  select(-contains(c("T0","plasmid"))) %>%
+    select(-contains(c("T0","plasmid"))) %>%
+      select(-contains(c("CRC_9_TCells_A_B_vs_CRC_9_IFNg_Lo_A_B_lfc")))
+filtered_2
+```
+
+```{r}
+#heatmap IFNg for key genes and lfc
+heat_map <-
+  filtered_2 %>%
+   filter(gene %in% c("MAP3K7", "CHD1", "SOCS1", "CDX2", "PTPN2", "CASP8", "CFLAR", "ADAR", "TNFAIP3", "ATG9A", "TSC1", "TSC2", "JAK1", "JAK2", "IFNGR1", "STAT1", "IRF1", "IFNGR2", "IFNAR1", "IFNAR2", "TAP1", "TAP2", "HLA-B", "CMHP5", "TYK2", "TNFRSF1A", "TNFRSF1B", "CHUK", "NFKB1", "ATF4", "SLC25A3", "SLC7A5", "TBK1", "IRF2BP2", "RAB5C")) %>%
+      select(contains(c("gene", "lfc")))
+
+df_numeric <- heat_map %>%
+  select(gene, everything()) %>%
+  drop_na() %>%
+  column_to_rownames("gene")  # Set gene column as row names
+
+# Convert to a matrix for pheatmap
+df_matrix <- as.matrix(df_numeric)
+
+# Generate the heatmap
+plot1 <- 
+  pheatmap(
+  df_matrix,
+  scale = "none",
+  clustering_distance_rows = "euclidean",
+  clustering_distance_cols = "euclidean",
+  clustering_method = "complete",
+  show_rownames = TRUE,  # Show gene names as row names
+  show_colnames = TRUE,
+  main = "",
+  color = colorRampPalette((brewer.pal(11, "RdBu")))(200),  # Set "RdBu" with 200 color levels
+  border_color = NA 
+)
+plot1
+
+ggsave(plot = plot1, "heatmap_all_CRISPR_extended_data.eps", width = 12, height = 10, path ="/Users/mc32/Documents/Matt_Coelho/Bioinformatics/Minlib_SL_JAK1_JAK2_Cas9_Watterson/figures_export")
+```
+
+```{r}
+# refined heatmap with labels and no IL-6
+
+heat_map <-
+  filtered_2 %>%
+  filter(gene %in% c("MAP3K7", "CHD1", "SOCS1", "CDX2", "PTPN2", "CASP8", "CFLAR", "ADAR", "TNFAIP3", "ATG9A", "TSC1", "TSC2", "JAK1", "JAK2", "IFNGR1", "STAT1", "IRF1", "IFNGR2", "IFNAR1", "IFNAR2", "TAP1", "TAP2", "HLA-B", "CMHP5", "TYK2", "TNFRSF1A", "TNFRSF1B", "CHUK", "NFKB1", "ATF4", "SLC25A3", "SLC7A5", "TBK1", "IRF2BP2", "RAB5C")) %>%
+      select(contains(c("gene", "lfc"))) %>%
+  select(-contains(c("IL6", "IFNb_vs_JAK2")))
+
+df_numeric <- heat_map %>%
+  select(gene, everything()) %>%
+  drop_na() %>%
+  column_to_rownames("gene")  # Set gene column as row names
+
+# Convert to a matrix for pheatmap
+df_matrix <- as.matrix(df_numeric)
+
+# Create a treatment annotation based on column names
+treatment <- ifelse(grepl("TCells", colnames(df_matrix)), "T_cell",
+              ifelse(grepl("TNFa", colnames(df_matrix)), "TNFa",
+              ifelse(grepl("IL6", colnames(df_matrix)), "IL6",
+                ifelse(grepl("Lo", colnames(df_matrix)), "IFNg",
+                ifelse(grepl("IFNb", colnames(df_matrix)), "IFNb",
+              ifelse(grepl("IFNg", colnames(df_matrix)), "IFNg", "Other"))))))
+
+# Create a dataframe for column annotation
+annotation_col <- data.frame(Treatment = treatment)
+rownames(annotation_col) <- colnames(df_matrix)
+
+# Define colors for the annotation
+annotation_colors <- list(
+  Treatment = c(T_cell = "black", IFNb = "orange", TNFa = "purple", IFNg = "red")
+)
+
+# Generate the heatmap with annotation
+plot1 <- pheatmap(
+  df_matrix,
+  scale = "none",
+  clustering_distance_rows = "euclidean",
+  clustering_distance_cols = "euclidean",
+  clustering_method = "complete",
+  show_rownames = TRUE,
+  show_colnames = TRUE,
+  main = "",
+  color = colorRampPalette((brewer.pal(11, "RdBu")))(200),
+  border_color = NA,
+  annotation_col = annotation_col,
+  annotation_colors = annotation_colors
+)
+plot1
+
+ggsave(plot = plot1, "heatmap_all_CRISPR.eps", width = 12.5, height = 9.5, path ="/Users/mc32/Documents/Matt_Coelho/Bioinformatics/Minlib_SL_JAK1_JAK2_Cas9_Watterson/figures_export")
+```
+
+```{r}
+#make a list of top hits for a heatmap
+filtered_3 <-
+filtered_2 %>%
+  filter(HT29_wt_IFNg_vs_ctrl_average_neg.rank < 30 | HT29_wt_IFNg_vs_ctrl_average_pos.rank < 30 & 
+           SKMEL2_wt_IFNg_vs_ctrl_average_neg.rank < 30 | SKMEL2_wt_IFNg_vs_ctrl_average_pos.rank <30 &
+           A375_wt_IFNg_vs_ctrl_average_neg.rank < 30 | A375_wt_IFNg_vs_ctrl_average_pos.rank < 30 &
+           SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_neg.rank < 30 | SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_pos.rank < 30 &
+           CRC_9_CTRL_TNFa_A_B_vs_CRC_9_TNFa_A_B_rank < 30  &
+           CRC_9_Ctrl_TCells_A_B_vs_CRC_9_TCells_A_B_rank < 30 &
+           CRC_9_Ctrl_IFNg_Hi_Lo_vs_CRC_9_IFNg_Lo_A_B_rank < 30)
+
+filtered_3
+```
+
+
+
+
