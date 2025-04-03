@@ -736,6 +736,9 @@ scale_colour_manual(values=c("red", "blue", "grey70"), na.value="grey80") +
        labs(color = "", size = "FDR") +labs(title= "") + xlab("Log2 fold change") + ylab("-Log10 (P-value)")
 plot1
 
+ggsave(plot = plot1, "HT29_JAK1_WT_volcano.eps", width = 6.5, height = 4, path ="/Users/mc32/Documents/Matt_Coelho/Bioinformatics/Minlib_SL_JAK1_JAK2_Cas9_Watterson/figures_export")
+
+
 plot2 <- ggplot(subset(HT29_IFNg_data, sample == "HT29_wt_IFNg_vs_JAK1c1_IFNg_average"), aes(x=neg.lfc, y= neg_log_10_p, colour = legend, size = fdr)) +
 geom_point(shape =1) +
 geom_text_repel(aes(label=ifelse(neg.lfc > 3.5 & neg_log_10_p > 5.5 |  legend == "depleted in WT vs KO" & neg.lfc < -2 | gene == "CHD1"| legend != "not significant" & gene %in% hits & neg_log_10_p > 4, gene, "")), size=3, colour =  "black", max.overlaps = Inf) +
@@ -745,6 +748,8 @@ scale_colour_manual(values=c("red", "blue", "grey70"), na.value="grey80") +
        labs(color = "", size = "FDR") +labs(title= "") + xlab("Log2 fold change") + ylab("-Log10 (P-value)")
 plot2
 
+ggsave(plot = plot2, "HT29_JAK1_c1_volcano.eps", width = 6.5, height = 4, path ="/Users/mc32/Documents/Matt_Coelho/Bioinformatics/Minlib_SL_JAK1_JAK2_Cas9_Watterson/figures_export")
+
 plot3 <- ggplot(subset(HT29_IFNg_data, sample == "HT29_wt_IFNg_vs_JAK1c3_IFNg_average"), aes(x=neg.lfc, y= neg_log_10_p, colour = legend, size = fdr)) +
 geom_point(shape =1) +
 geom_text_repel(aes(label=ifelse(neg.lfc > 3.5 & neg_log_10_p > 5.5 |  legend == "depleted in WT vs KO" & neg.lfc < -2 | legend != "not significant" & gene %in% hits & neg_log_10_p > 4, gene, "")), size=3, colour =  "black", max.overlaps = Inf) +
@@ -753,6 +758,8 @@ scale_colour_manual(values=c("red", "blue", "grey70"), na.value="grey80") +
     scale_size(transform = "reverse", range = c(0.1,3.5) ) +
        labs(color = "", size = "FDR") +labs(title= "") + xlab("Log2 fold change") + ylab("-Log10 (P-value)")
 plot3
+
+ggsave(plot = plot3, "HT29_JAK1_c3_volcano.eps", width = 6.5, height = 4, path ="/Users/mc32/Documents/Matt_Coelho/Bioinformatics/Minlib_SL_JAK1_JAK2_Cas9_Watterson/figures_export")
 
 plot4 <- ggplot(subset(HT29_IFNg_data, sample == "HT29_wt_IFNg_vs_JAK2A11_IFNg_average"), aes(x=neg.lfc, y= neg_log_10_p, colour = legend, size = fdr)) +
 geom_point(shape =1) +
@@ -772,6 +779,7 @@ scale_colour_manual(values=c("blue", "grey70", "red"), na.value="grey80") +
        labs(color = "", size = "FDR") +labs(title= "") + xlab("Log2 fold change") + ylab("-Log10 (P-value)")
 plot5
 ```
+
 ```{r}
 # plot WT HT-29
 
@@ -1518,7 +1526,7 @@ scale_colour_manual(values=c("red", "grey70", "blue"), na.value="grey80") +
 labs(title= "") + xlab("Log2 fold change") + ylab("-Log10 (P-value)")
 plot2
 
-ggsave(plot = plot2, "SKMEL2_JAK2KO_beta_volcano.eps", width = 7.5, height = 4.5, path ="/Users/mc32/Documents/Matt_Coelho/Bioinformatics/Minlib_SL_JAK1_JAK2_Cas9_Watterson/figures_export")
+ggsave(plot = plot2, "SKMEL2_JAK2KO_beta_volcano.eps", width = 6.5, height = 4, path ="/Users/mc32/Documents/Matt_Coelho/Bioinformatics/Minlib_SL_JAK1_JAK2_Cas9_Watterson/figures_export")
 
 plot3 <- ggplot(subset(ctrl_average_graph2, sample == "SKMEL2_wt_ctrl_vs_JAK1B8_ctrl_average"), aes(x=neg.lfc, y= neg_log_10_p, colour = legend, size = fdr)) +
 geom_point(shape = 1) +
@@ -1544,13 +1552,13 @@ plot5 <- ggplot(subset(IFNb_average, sample == "SKMEL2_wt_IFNb_vs_JAK1B8_IFNb_av
 geom_point(shape = 1) +
 geom_text_repel(aes(label=ifelse(neg.lfc > 2.7 & neg_log_10_p > 4 & fdr < 0.1|  neg.lfc < -2.7 & neg_log_10_p > 4 & fdr <0.1, gene, "")), size=3, position=pos, max.overlaps = Inf, colour = "black") +
 theme_classic() +
-scale_colour_manual(values=c("red", "blue", "grey70"), na.value="grey80") +
+scale_colour_manual(values=c("blue", "red", "grey70"), na.value="grey80") +
     scale_size(transform = "reverse", range = c(0.1,3.5) ) +
        labs(color = "", size = "FDR") +
 labs() + xlab("Log2 fold change") + ylab("-Log10 (P-value)")
 plot5
 
-ggsave(plot = plot5, "SKMEL2_JAK1KO_beta_volcano.eps", width = 7.5, height = 4.5, path ="/Users/mc32/Documents/Matt_Coelho/Bioinformatics/Minlib_SL_JAK1_JAK2_Cas9_Watterson/figures_export")
+ggsave(plot = plot5, "SKMEL2_JAK1KO_beta_volcano.eps", width = 6.5, height = 4, path ="/Users/mc32/Documents/Matt_Coelho/Bioinformatics/Minlib_SL_JAK1_JAK2_Cas9_Watterson/figures_export")
 
 plot6 <- ggplot(subset(IFNb_average, sample == "SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average"), aes(x=neg.lfc, y= neg_log_10_p, colour = legend, size = fdr)) +
 geom_point(shape = 1) +
@@ -2349,7 +2357,8 @@ ORG_screens <- left_join(ORG_screens, ORG_screens_average)
 
 ORG_screens %>%
 select(contains("ITO66T")) %>%
-  colnames()
+  select(contains("lfc")) %>%
+colnames()
 ```
 
 ```{r}
@@ -2906,12 +2915,12 @@ filtered <- (Supplementary_Table1)[sapply(colnames(Supplementary_Table1), functi
 # Rename columns in Supplementary_Table1
 colnames(filtered) <- str_replace_all(colnames(filtered), "ITO66T", "CRC_9")
   
- colnames(filtered) <- str_replace_all(colnames(filtered), "γ", "g")
+colnames(filtered) <- str_replace_all(colnames(filtered), "γ", "g")
+
 ```
 
 ```{r}
 #remove Hi IFNg condition
-# write Supplementary Table 1
 filtered <-
   filtered %>% 
   select(-contains("CRC_9_Ctrl_IFNg_Hi_vs_CRC_9_IFNg_Hi"))
@@ -2928,10 +2937,28 @@ filtered <-
   filtered %>% 
   select(-contains("CRC_9_Ctrl_IFNg_Lo_vs_CRC_9_IFNg_Lo_A_B_"))
 
-#ITO66T_Ctrl_IFNγ_Hi_vs_ITO66T_IFNγ_Lo_A_lfc, y= ITO66T_Ctrl_IFNγ_Lo_vs_ITO66T_IFNγ_Lo_B_lfc
+```
+
+```{r}
+#rename the columns with CRC_9 IFNg Lo, Hi for clarity
+
+colnames(filtered) <-
+  str_replace_all(colnames(filtered),"CRC_9_Ctrl_IFNg_Hi_Lo_vs_CRC_9_IFNg_Lo_A_B", "CRC_9_Ctrl_IFNg_A_B_vs_CRC_9_IFNg_A_B")
+
+colnames(filtered) <-
+  str_replace_all(colnames(filtered), "CRC_9_Ctrl_IFNg_Hi_vs_CRC_9_IFNg_Lo_A", "CRC_9_Ctrl_IFNg_A_vs_CRC_9_IFNg_A")
+
+colnames(filtered) <-
+  str_replace_all(colnames(filtered), "CRC_9_Ctrl_IFNg_Lo_vs_CRC_9_IFNg_Lo_B", "CRC_9_Ctrl_IFNg_B_vs_CRC_9_IFNg_B")
+
+colnames(filtered)
+```
+
+```{r}
+#write supplemental table 1
 
 filtered %>%
-  write.csv("Supplementary_Table_1.csv")
+  write.csv("Supplemental_Table_1.csv")
 ```
 
 ```{r}
@@ -3034,22 +3061,3 @@ plot1
 
 ggsave(plot = plot1, "heatmap_all_CRISPR.eps", width = 12.5, height = 9.5, path ="/Users/mc32/Documents/Matt_Coelho/Bioinformatics/Minlib_SL_JAK1_JAK2_Cas9_Watterson/figures_export")
 ```
-
-```{r}
-#make a list of top hits for a heatmap
-filtered_3 <-
-filtered_2 %>%
-  filter(HT29_wt_IFNg_vs_ctrl_average_neg.rank < 30 | HT29_wt_IFNg_vs_ctrl_average_pos.rank < 30 & 
-           SKMEL2_wt_IFNg_vs_ctrl_average_neg.rank < 30 | SKMEL2_wt_IFNg_vs_ctrl_average_pos.rank <30 &
-           A375_wt_IFNg_vs_ctrl_average_neg.rank < 30 | A375_wt_IFNg_vs_ctrl_average_pos.rank < 30 &
-           SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_neg.rank < 30 | SKMEL2_wt_IFNb_vs_JAK1C8_IFNb_average_pos.rank < 30 &
-           CRC_9_CTRL_TNFa_A_B_vs_CRC_9_TNFa_A_B_rank < 30  &
-           CRC_9_Ctrl_TCells_A_B_vs_CRC_9_TCells_A_B_rank < 30 &
-           CRC_9_Ctrl_IFNg_Hi_Lo_vs_CRC_9_IFNg_Lo_A_B_rank < 30)
-
-filtered_3
-```
-
-
-
-
